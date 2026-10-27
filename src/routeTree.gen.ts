@@ -16,10 +16,13 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAgentsRouteImport } from './routes/admin.agents'
+import { Route as AdminEnquiriesRouteImport } from './routes/admin.enquiries'
 import { Route as AdminLocationsRouteImport } from './routes/admin.locations'
 import { Route as AdminPropertiesRouteImport } from './routes/admin.properties'
 import { Route as PropertiesIndexRouteImport } from './routes/properties.index'
 import { Route as PropertiesSlugRouteImport } from './routes/properties.$slug'
+import { Route as AdminReceiptIdRouteImport } from './routes/admin.receipt.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -56,6 +59,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAgentsRoute = AdminAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEnquiriesRoute = AdminEnquiriesRouteImport.update({
+  id: '/enquiries',
+  path: '/enquiries',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLocationsRoute = AdminLocationsRouteImport.update({
   id: '/locations',
   path: '/locations',
@@ -76,6 +89,11 @@ const PropertiesSlugRoute = PropertiesSlugRouteImport.update({
   path: '/properties/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReceiptIdRoute = AdminReceiptIdRouteImport.update({
+  id: '/receipt/$id',
+  path: '/receipt/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -84,11 +102,14 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
   '/services': typeof ServicesRoute
+  '/admin/agents': typeof AdminAgentsRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/locations': typeof AdminLocationsRoute
   '/admin/properties': typeof AdminPropertiesRoute
   '/properties/$slug': typeof PropertiesSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/admin/receipt/$id': typeof AdminReceiptIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -96,11 +117,14 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
   '/services': typeof ServicesRoute
+  '/admin/agents': typeof AdminAgentsRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/locations': typeof AdminLocationsRoute
   '/admin/properties': typeof AdminPropertiesRoute
   '/properties/$slug': typeof PropertiesSlugRoute
   '/admin': typeof AdminIndexRoute
   '/properties': typeof PropertiesIndexRoute
+  '/admin/receipt/$id': typeof AdminReceiptIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -110,11 +134,14 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
   '/services': typeof ServicesRoute
+  '/admin/agents': typeof AdminAgentsRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/locations': typeof AdminLocationsRoute
   '/admin/properties': typeof AdminPropertiesRoute
   '/properties/$slug': typeof PropertiesSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/properties/': typeof PropertiesIndexRoute
+  '/admin/receipt/$id': typeof AdminReceiptIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,11 +152,14 @@ export interface FileRouteTypes {
     | '/contact'
     | '/privacy'
     | '/services'
+    | '/admin/agents'
+    | '/admin/enquiries'
     | '/admin/locations'
     | '/admin/properties'
     | '/properties/$slug'
     | '/admin/'
     | '/properties/'
+    | '/admin/receipt/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -137,11 +167,14 @@ export interface FileRouteTypes {
     | '/contact'
     | '/privacy'
     | '/services'
+    | '/admin/agents'
+    | '/admin/enquiries'
     | '/admin/locations'
     | '/admin/properties'
     | '/properties/$slug'
     | '/admin'
     | '/properties'
+    | '/admin/receipt/$id'
   id:
     | '__root__'
     | '/'
@@ -150,11 +183,14 @@ export interface FileRouteTypes {
     | '/contact'
     | '/privacy'
     | '/services'
+    | '/admin/agents'
+    | '/admin/enquiries'
     | '/admin/locations'
     | '/admin/properties'
     | '/properties/$slug'
     | '/admin/'
     | '/properties/'
+    | '/admin/receipt/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -219,6 +255,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/agents': {
+      id: '/admin/agents'
+      path: '/agents'
+      fullPath: '/admin/agents'
+      preLoaderRoute: typeof AdminAgentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/enquiries': {
+      id: '/admin/enquiries'
+      path: '/enquiries'
+      fullPath: '/admin/enquiries'
+      preLoaderRoute: typeof AdminEnquiriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/locations': {
       id: '/admin/locations'
       path: '/locations'
@@ -247,19 +297,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertiesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/receipt/$id': {
+      id: '/admin/receipt/$id'
+      path: '/receipt/$id'
+      fullPath: '/admin/receipt/$id'
+      preLoaderRoute: typeof AdminReceiptIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAgentsRoute: typeof AdminAgentsRoute
+  AdminEnquiriesRoute: typeof AdminEnquiriesRoute
   AdminLocationsRoute: typeof AdminLocationsRoute
   AdminPropertiesRoute: typeof AdminPropertiesRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminReceiptIdRoute: typeof AdminReceiptIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAgentsRoute: AdminAgentsRoute,
+  AdminEnquiriesRoute: AdminEnquiriesRoute,
   AdminLocationsRoute: AdminLocationsRoute,
   AdminPropertiesRoute: AdminPropertiesRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminReceiptIdRoute: AdminReceiptIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
