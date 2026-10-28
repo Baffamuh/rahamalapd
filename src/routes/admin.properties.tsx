@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { BadgeCheck, ExternalLink, Pencil, Plus, Trash2, X } from "lucide-react";
+import { BadgeCheck, ExternalLink, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { SaleForm } from "@/components/admin/SaleForm";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,38 +25,75 @@ function blank(): Property {
 function AdminProperties() {
   const db = useDbAll();
   const [q, setQ] = useState("");
+  const [statusF, setStatusF] = useState<PropertyStatus | "All">("All");
   const [edit, setEdit] = useState<Property | null>(null);
   const [selling, setSelling] = useState<Property | null>(null);
-  const list = db.properties.filter((p) => `${p.title} ${p.ref}`.toLowerCase().includes(q.toLowerCase()));
+  const list = db.properties.filter((p) => (statusF === "All" || p.status === statusF) && `${p.title} ${p.ref}`.toLowerCase().includes(q.toLowerCase()));
   const setStatus = (id: string, status: PropertyStatus) => updateDb((d) => ({ ...d, properties: d.properties.map((p) => (p.id === id ? { ...p, status } : p)) }), `Status → ${status}`);
+  const del = (p: Property) => confirm(`Delete ${p.title}?`) && updateDb((d) => ({ ...d, properties: d.properties.filter((x) => x.id !== p.id) }), `Listing deleted: ${p.title}`);
+  const canSell = (p: Property) => p.status !== "Sold" && p.status !== "Archived";
+  const statusSel = (p: Property) => <select aria-label="Status" className="h-8 rounded-md border bg-background px-2 text-xs" value={p.status} onChange={(e) => setStatus(p.id, e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select>;
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Properties</h1>
-        <div className="flex gap-2"><Input placeholder="Search title or ref…" value={q} onChange={(e) => setQ(e.target.value)} className="w-56" /><Button onClick={() => setEdit(blank())}><Plus className="mr-1 h-4 w-4" /> New listing</Button></div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0"><h1 className="truncate text-2xl font-bold sm:text-3xl">Properties</h1><p className="text-sm text-muted-foreground">{list.length} of {db.properties.length} listings</p></div>
+        <Button onClick={() => setEdit(blank())}><Plus className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">New listing</span><span className="sm:hidden">New</span></Button>
       </div>
-      <div className="overflow-x-auto rounded-xl border bg-card">
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_200px]">
+        <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search title or reference…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" /></div>
+        <select aria-label="Filter status" className={sel} value={statusF} onChange={(e) => setStatusF(e.target.value as PropertyStatus | "All")}><option value="All">All statuses</option>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select>
+      </div>
+
+      {list.length === 0 && <div className="rounded-xl border bg-card p-10 text-center text-sm text-muted-foreground">No listings match your search.</div>}
+
+      {/* Phones & tablets: cards */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:hidden">
+        {list.map((p) => (
+          <div key={p.id} className="overflow-hidden rounded-xl border bg-card shadow-sm">
+            <div className="flex gap-3 p-3">
+              <img src={p.images[0]} alt="" className="h-20 w-24 shrink-0 rounded-lg object-cover" />
+              <div className="min-w-0 flex-1">
+                <div className="line-clamp-2 font-medium leading-snug">{p.title}</div>
+                <div className="truncate text-xs text-muted-foreground">{p.ref} · {zoneLabel(db, p.zoneId, p.subZoneId)}</div>
+                <div className="mt-1 font-display font-bold text-primary">{formatNaira(p.price)}</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2 border-t bg-muted/40 px-3 py-2">
+              {statusSel(p)}
+              <div className="flex shrink-0 items-center">
+                <Button size="icon" variant="ghost" asChild><Link to="/properties/$slug" params={{ slug: p.slug }} target="_blank" aria-label="View"><ExternalLink className="h-4 w-4" /></Link></Button>
+                <Button size="icon" variant="ghost" onClick={() => setEdit(p)} aria-label="Edit"><Pencil className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => del(p)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>
+              </div>
+            </div>
+            {canSell(p) && <div className="border-t p-2"><Button size="sm" className="w-full" onClick={() => setSelling(p)}><BadgeCheck className="mr-1 h-4 w-4" /> Mark as Sold & print receipt</Button></div>}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: table */}
+      {list.length > 0 && <div className="hidden overflow-hidden rounded-xl border bg-card shadow-sm lg:block">
         <table className="w-full text-sm">
-          <thead className="bg-muted text-left text-xs uppercase text-muted-foreground"><tr><th className="p-3">Listing</th><th className="p-3">Location</th><th className="p-3">Price</th><th className="p-3">Status</th><th className="p-3"></th></tr></thead>
+          <thead className="bg-muted text-left text-xs uppercase text-muted-foreground"><tr><th className="p-3">Listing</th><th className="p-3">Location</th><th className="p-3">Price</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th></tr></thead>
           <tbody>
             {list.map((p) => (
-              <tr key={p.id} className="border-t">
-                <td className="p-3"><div className="flex items-center gap-3"><img src={p.images[0]} alt="" className="h-10 w-14 rounded object-cover" /><div><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">{p.ref} · {p.category}</div></div></div></td>
+              <tr key={p.id} className="border-t transition hover:bg-muted/40">
+                <td className="p-3"><div className="flex items-center gap-3"><img src={p.images[0]} alt="" className="h-11 w-16 rounded-md object-cover" /><div className="min-w-0"><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">{p.ref} · {p.category}</div></div></div></td>
                 <td className="p-3 text-muted-foreground">{zoneLabel(db, p.zoneId, p.subZoneId)}</td>
                 <td className="p-3 font-medium">{formatNaira(p.price)}</td>
-                <td className="p-3"><select className="rounded-md border bg-background px-2 py-1 text-xs" value={p.status} onChange={(e) => setStatus(p.id, e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select></td>
-                <td className="p-3 text-right whitespace-nowrap">
-                  {p.status !== "Sold" && p.status !== "Archived" && <Button size="sm" className="mr-1" onClick={() => setSelling(p)}><BadgeCheck className="mr-1 h-4 w-4" /> Mark as Sold</Button>}
-                  <Button size="icon" variant="ghost" asChild><Link to="/properties/$slug" params={{ slug: p.slug }} target="_blank"><ExternalLink className="h-4 w-4" /></Link></Button>
-                  <Button size="icon" variant="ghost" onClick={() => setEdit(p)}><Pencil className="h-4 w-4" /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => confirm(`Delete ${p.title}?`) && updateDb((d) => ({ ...d, properties: d.properties.filter((x) => x.id !== p.id) }), `Listing deleted: ${p.title}`)}><Trash2 className="h-4 w-4" /></Button>
+                <td className="p-3">{statusSel(p)}</td>
+                <td className="whitespace-nowrap p-3 text-right">
+                  {canSell(p) && <Button size="sm" className="mr-1" onClick={() => setSelling(p)}><BadgeCheck className="mr-1 h-4 w-4" /> Mark as Sold</Button>}
+                  <Button size="icon" variant="ghost" asChild><Link to="/properties/$slug" params={{ slug: p.slug }} target="_blank" aria-label="View"><ExternalLink className="h-4 w-4" /></Link></Button>
+                  <Button size="icon" variant="ghost" onClick={() => setEdit(p)} aria-label="Edit"><Pencil className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => del(p)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
       <Dialog open={!!selling} onOpenChange={(o) => !o && setSelling(null)}>
         <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Mark as Sold — {selling?.ref}</DialogTitle></DialogHeader>{selling && <SaleForm propertyId={selling.id} onDone={() => setSelling(null)} />}</DialogContent>
       </Dialog>
