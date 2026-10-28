@@ -15,7 +15,7 @@ import { getDb, useDb, useDbAll, zoneLabel } from "@/lib/store";
 import { TITLE_DOCS } from "@/lib/types";
 
 export const Route = createFileRoute("/properties/$slug")({
-  validateSearch: (s: Record<string, unknown>): { invite?: string } => (typeof s.invite === "string" ? { invite: s.invite } : {}),
+  validateSearch: (s: Record<string, unknown>): { invite?: string } => (typeof s['invite'] === "string" ? { invite: s['invite'] } : {}),
   loader: ({ params }) => {
     const p = getDb().properties.find((x) => x.slug === params.slug);
     if (p && p.status === "Private") return { title: undefined, ref: undefined, price: undefined, image: undefined, description: undefined };

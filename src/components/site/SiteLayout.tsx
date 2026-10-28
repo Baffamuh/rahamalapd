@@ -9,7 +9,7 @@ import logoAsset from "@/assets/rahama-logo.png.asset.json";
 /** Falls back to the locally bundled emblem (/favicon.png) if the CDN image can't load. */
 function fallback(e: SyntheticEvent<HTMLImageElement>) {
   const img = e.currentTarget;
-  if (!img.dataset.fallback) { img.dataset.fallback = "1"; img.src = "/favicon.png"; }
+  if (!img.dataset['fallback']) { img.dataset['fallback'] = "1"; img.src = "/favicon.png"; }
 }
 
 export function Emblem({ className = "h-9 w-9", framed = false }: { className?: string; framed?: boolean }) {
