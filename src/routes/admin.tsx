@@ -68,7 +68,7 @@ function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-muted/40">
       <aside className="no-print sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
-        <Link to="/" className="flex items-center gap-3 p-5"><Emblem /><div className="leading-tight"><div className="font-display font-bold">Rahama Admin</div><div className="text-[11px] opacity-70">Back office</div></div></Link>
+        <Link to="/" className="flex items-center gap-3 p-5"><Emblem framed className="h-10 w-10" /><div className="leading-tight"><div className="font-display font-bold">Rahama Admin</div><div className="text-[11px] opacity-70">Back office</div></div></Link>
         <NavLinks />
         <button onClick={signOut} className="m-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm opacity-80 hover:bg-sidebar-accent"><LogOut className="h-4 w-4" /> Sign out</button>
       </aside>
@@ -77,12 +77,12 @@ function AdminLayout() {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild><Button size="icon" variant="ghost" className="hover:bg-sidebar-accent" aria-label="Open menu"><Menu className="h-5 w-5" /></Button></SheetTrigger>
             <SheetContent side="left" className="flex w-72 flex-col bg-sidebar p-0 text-sidebar-foreground">
-              <SheetTitle className="flex items-center gap-3 p-5 text-sidebar-foreground"><Emblem /><span className="font-display font-bold">Rahama Admin</span></SheetTitle>
+              <SheetTitle className="flex items-center gap-3 p-5 text-sidebar-foreground"><Emblem framed className="h-10 w-10" /><span className="font-display font-bold">Rahama Admin</span></SheetTitle>
               <NavLinks onNavigate={() => setOpen(false)} />
               <button onClick={signOut} className="m-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm opacity-80 hover:bg-sidebar-accent"><LogOut className="h-4 w-4" /> Sign out</button>
             </SheetContent>
           </Sheet>
-          <div className="flex min-w-0 items-center gap-2"><Emblem className="h-7 w-7 shrink-0" /><span className="truncate font-display font-semibold">{current}</span></div>
+          <div className="flex min-w-0 items-center gap-2"><Emblem framed className="h-8 w-8" /><span className="truncate font-display font-semibold">{current}</span></div>
           <Button size="icon" variant="ghost" className="hover:bg-sidebar-accent" onClick={signOut} aria-label="Sign out"><LogOut className="h-4 w-4" /></Button>
         </header>
         <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8"><Outlet /></div>
