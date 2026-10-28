@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { BadgeCheck, ExternalLink, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { BadgeCheck, ExternalLink, Link2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { SaleForm } from "@/components/admin/SaleForm";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,18 @@ function AdminProperties() {
   const list = db.properties.filter((p) => (statusF === "All" || p.status === statusF) && `${p.title} ${p.ref}`.toLowerCase().includes(q.toLowerCase()));
   const setStatus = (id: string, status: PropertyStatus) => updateDb((d) => ({ ...d, properties: d.properties.map((p) => (p.id === id ? { ...p, status } : p)) }), `Status → ${status}`);
   const del = (p: Property) => confirm(`Delete ${p.title}?`) && updateDb((d) => ({ ...d, properties: d.properties.filter((x) => x.id !== p.id) }), `Listing deleted: ${p.title}`);
+  const copyInvite = async (p: Property) => {
+    let token = p.inviteToken;
+    if (!token) {
+      token = uid() + uid();
+      const t = token;
+      updateDb((d) => ({ ...d, properties: d.properties.map((x) => (x.id === p.id ? { ...x, inviteToken: t } : x)) }), `Invite link created: ${p.title}`);
+    }
+    const url = `${window.location.origin}/properties/${p.slug}?invite=${token}`;
+    try { await navigator.clipboard.writeText(url); toast.success("Private invite link copied", { description: "Only people with this link can view the listing." }); }
+    catch { window.prompt("Copy this private invite link:", url); }
+  };
+  const inviteBtn = (p: Property) => p.status === "Private" && <Button size="icon" variant="ghost" onClick={() => copyInvite(p)} aria-label="Copy invite link" title="Copy private invite link"><Link2 className="h-4 w-4" /></Button>;
   const canSell = (p: Property) => p.status !== "Sold" && p.status !== "Archived";
   const statusSel = (p: Property) => <select aria-label="Status" className="h-8 rounded-md border bg-background px-2 text-xs" value={p.status} onChange={(e) => setStatus(p.id, e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select>;
 
@@ -62,6 +74,7 @@ function AdminProperties() {
             <div className="flex items-center justify-between gap-2 border-t bg-muted/40 px-3 py-2">
               {statusSel(p)}
               <div className="flex shrink-0 items-center">
+                {inviteBtn(p)}
                 <Button size="icon" variant="ghost" asChild><Link to="/properties/$slug" params={{ slug: p.slug }} target="_blank" aria-label="View"><ExternalLink className="h-4 w-4" /></Link></Button>
                 <Button size="icon" variant="ghost" onClick={() => setEdit(p)} aria-label="Edit"><Pencil className="h-4 w-4" /></Button>
                 <Button size="icon" variant="ghost" onClick={() => del(p)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>
@@ -85,6 +98,7 @@ function AdminProperties() {
                 <td className="p-3">{statusSel(p)}</td>
                 <td className="whitespace-nowrap p-3 text-right">
                   {canSell(p) && <Button size="sm" className="mr-1" onClick={() => setSelling(p)}><BadgeCheck className="mr-1 h-4 w-4" /> Mark as Sold</Button>}
+                  {inviteBtn(p)}
                   <Button size="icon" variant="ghost" asChild><Link to="/properties/$slug" params={{ slug: p.slug }} target="_blank" aria-label="View"><ExternalLink className="h-4 w-4" /></Link></Button>
                   <Button size="icon" variant="ghost" onClick={() => setEdit(p)} aria-label="Edit"><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => del(p)} aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>
@@ -157,7 +171,7 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
         <div><Label>Zone</Label><select className={sel} value={f.zoneId} onChange={(e) => setF((p) => ({ ...p, zoneId: e.target.value, subZoneId: "", areaId: "" }))}><option value="">Select zone…</option>{db.zones.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}</select></div>
         <div><Label>Sub-zone</Label><select className={sel} disabled={!zone} value={f.subZoneId} onChange={(e) => setF((p) => ({ ...p, subZoneId: e.target.value, areaId: "" }))}><option value="">Select sub-zone…</option>{zone?.subZones.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
         <div><Label>Layout area</Label><select className={sel} disabled={!sub} value={f.areaId} onChange={(e) => set("areaId", e.target.value)}><option value="">Select area…</option>{sub?.areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-        <div><Label>Status</Label><select className={sel} value={f.status} onChange={(e) => set("status", e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select></div>
+        <div><Label>Status</Label><select className={sel} value={f.status} onChange={(e) => set("status", e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s} value={s}>{s === "Private" ? "Private (invite link only)" : s}</option>)}</select>{f.status === "Private" && <p className="mt-1 text-xs text-muted-foreground">Hidden from the website. After saving, use the link button on the listing to copy a private invite link.</p>}</div>
         <div><Label>Price (₦)</Label><Input type="number" value={f.price || ""} onChange={(e) => set("price", Number(e.target.value))} /></div>
         <div><Label>Plots (50×100 ft)</Label><Input type="number" step="0.1" value={f.plots} onChange={(e) => set("plots", Number(e.target.value))} /></div>
         <div><Label>Dimensions</Label><Input value={f.dimensions} onChange={(e) => set("dimensions", e.target.value)} /></div>

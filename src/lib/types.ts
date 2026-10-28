@@ -4,10 +4,10 @@ export type Area = { id: string; name: string };
 export type SubZone = { id: string; name: string; areas: Area[] };
 export type Zone = { id: string; name: string; code: "AZR" | "BAU"; subZones: SubZone[] };
 
-export type PropertyStatus = "Draft" | "Published" | "Reserved" | "Sold" | "Archived";
+export type PropertyStatus = "Draft" | "Published" | "Private" | "Reserved" | "Sold" | "Archived";
 export type Category = "Residential Land" | "Commercial Land" | "House/Villa" | "Farm" | "Shop";
 export const CATEGORIES: Category[] = ["Residential Land", "Commercial Land", "House/Villa", "Farm", "Shop"];
-export const STATUSES: PropertyStatus[] = ["Draft", "Published", "Reserved", "Sold", "Archived"];
+export const STATUSES: PropertyStatus[] = ["Draft", "Published", "Private", "Reserved", "Sold", "Archived"];
 export const TITLE_DOCS = ["C-of-O", "R-of-O", "Survey Plan", "Deed of Assignment"] as const;
 
 export type Survey = { area?: number | undefined; number?: string | undefined; authority?: string | undefined; date?: string | undefined };
@@ -34,6 +34,8 @@ export type Property = {
   titleDocs: string[];
   boundary: LatLng[];
   survey: Survey;
+  /** Secret token for invite-only (Private) listings. */
+  inviteToken?: string | undefined;
   createdAt: string;
 };
 

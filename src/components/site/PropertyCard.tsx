@@ -7,7 +7,7 @@ import type { Property, PropertyStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function publicStatus(s: PropertyStatus) {
-  return s === "Published" ? "Available" : s;
+  return s === "Published" || s === "Private" ? "Available" : s;
 }
 
 export function StatusBadge({ status, className }: { status: PropertyStatus; className?: string }) {

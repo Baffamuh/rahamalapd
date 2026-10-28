@@ -72,3 +72,13 @@ export function validateBoundary(points: LatLng[]): { ok: boolean; message?: str
   if (geodesicArea(points) < 1) return { ok: false, message: "Boundary area is too small to be valid." };
   return { ok: true };
 }
+
+/**
+ * GPS walk-the-boundary filter: accept a new fix only if it is accurate enough
+ * and far enough from the last recorded corner to avoid GPS jitter.
+ */
+export function acceptWalkFix(last: LatLng | undefined, next: LatLng, accuracyM: number, minStepM = 3, maxAccuracyM = 25): boolean {
+  if (!(accuracyM <= maxAccuracyM)) return false;
+  if (!last) return true;
+  return distance(last, next) >= Math.max(minStepM, accuracyM * 0.5);
+}

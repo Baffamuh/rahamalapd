@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { areaBreakdown, edgeLengths, geodesicArea, isSelfIntersecting, M_TO_FT } from "@/lib/geo";
+import { acceptWalkFix, areaBreakdown, edgeLengths, geodesicArea, isSelfIntersecting, M_TO_FT } from "@/lib/geo";
 import { formatNaira } from "@/lib/company";
 import { leaderboard, saleBalance } from "@/lib/leaderboard";
 import { nextReceipt, nextRef } from "@/lib/store";
@@ -7,6 +7,15 @@ import { makeSeed } from "@/lib/seed";
 import { scoreLead } from "@/lib/leads";
 
 describe("business rules", () => {
+  it("GPS walk ignores fixes worse than 25 m accuracy", () => expect(acceptWalkFix(undefined, [11.67, 10.18], 40)).toBe(false));
+  it("GPS walk ignores jitter under 3 m from the last corner", () => expect(acceptWalkFix([11.67, 10.18], [11.67001, 10.18], 5)).toBe(false));
+  it("GPS walk records a fix ~11 m away", () => expect(acceptWalkFix([11.67, 10.18], [11.6701, 10.18], 5)).toBe(true));
+  it("private listings are hidden from the public catalogue", async () => {
+    const { filterProperties } = await import("@/routes/properties.index");
+    const db = makeSeed();
+    db.properties[0]!.status = "Private";
+    expect(filterProperties(db, {} as never).some((p) => p.id === db.properties[0]!.id)).toBe(false);
+  });
   it("formats Naira with commas", () => expect(formatNaira(12500000)).toBe("₦12,500,000"));
   it("one standard plot (5,000 sq ft) is ~464.5 m²", () => expect(areaBreakdown(464.5).plots).toBeCloseTo(1, 2));
   it("geodesic area of a ~100m square is ~10,000 m²", () => {
