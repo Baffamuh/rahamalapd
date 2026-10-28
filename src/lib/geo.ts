@@ -34,6 +34,27 @@ export function isSelfIntersecting(points: LatLng[]): boolean {
   return false;
 }
 
+/** Great-circle (haversine) distance in metres between two points. */
+export function distance(a: LatLng, b: LatLng): number {
+  const dLat = rad(b[0] - a[0]);
+  const dLng = rad(b[1] - a[1]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371008.8 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+export const M_TO_FT = 3.28084;
+
+/** Length of every side of the closed boundary, in metres. */
+export function edgeLengths(points: LatLng[]): number[] {
+  if (points.length < 2) return [];
+  const n = points.length < 3 ? 1 : points.length;
+  return Array.from({ length: n }, (_, i) => distance(points[i]!, points[(i + 1) % points.length]!));
+}
+
+export function perimeter(points: LatLng[]): number {
+  return points.length < 3 ? 0 : edgeLengths(points).reduce((s, x) => s + x, 0);
+}
+
 export function areaBreakdown(sqm: number) {
   const sqft = sqm * SQFT_PER_SQM;
   return {
