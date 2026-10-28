@@ -32,9 +32,9 @@ function ReceiptPage() {
         <Emblem className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 opacity-[0.05]" />
         <header className="relative flex items-center justify-between gap-6 border-b-4 border-primary pb-5">
           <div className="flex items-center gap-4">
-            <BrandLogo className="h-24" />
+            <BrandLogo className="h-20 shrink-0" />
             <div>
-              <div className="font-display text-lg font-bold text-primary">{COMPANY.name}</div>
+              <div className="font-display text-base font-bold leading-snug text-primary">{COMPANY.name}</div>
               <div className="text-xs font-semibold">{COMPANY.rc}</div>
               <div className="mt-1 text-xs text-muted-foreground">{COMPANY.address}</div>
               <div className="text-xs text-muted-foreground">{COMPANY.phones.join(" · ")} · {COMPANY.email}</div>
