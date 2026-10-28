@@ -23,14 +23,17 @@ export function getDb(): DB {
   return load();
 }
 
-export function updateDb(fn: (d: DB) => DB, activity?: string) {
-  let next = fn(load());
+/** Returns false when the browser storage is full and the change could not be saved. */
+export function updateDb(fn: (d: DB) => DB, activity?: string): boolean {
+  const prev = load();
+  let next = fn(prev);
   if (activity) {
     next = { ...next, activity: [{ id: uid(), text: activity, at: new Date().toISOString() }, ...next.activity].slice(0, 50) };
   }
+  try { window.localStorage.setItem(KEY, JSON.stringify(next)); } catch { return false; }
   db = next;
-  try { window.localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* ignore */ }
   listeners.forEach((l) => l());
+  return true;
 }
 
 export function resetDb() {

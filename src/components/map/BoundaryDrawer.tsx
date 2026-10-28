@@ -3,7 +3,8 @@ import { AlertTriangle, CheckCircle2, Crosshair, Footprints, Hand, MapPin, Pause
 import { Button } from "@/components/ui/button";
 import { MapView } from "./MapView";
 import { AreaSummary, CadastralDisclaimer } from "./AreaSummary";
-import { acceptWalkFix, edgeLengths, M_TO_FT, perimeter, validateBoundary, type LatLng } from "@/lib/geo";
+import { acceptWalkFix, edgeLengths, geodesicArea, M_TO_FT, perimeter, validateBoundary, type LatLng } from "@/lib/geo";
+import { PLOT_SQFT, SQFT_PER_SQM } from "@/lib/company";
 
 const f1 = (x: number) => x.toLocaleString("en-NG", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 
@@ -46,9 +47,24 @@ export function BoundaryDrawer({ value, onChange }: { value: LatLng[]; onChange:
   const v = validateBoundary(value);
   const edges = edgeLengths(value);
   const per = perimeter(value);
+  const sqm = v.ok ? geodesicArea(value) : 0;
+  const sqft = sqm * SQFT_PER_SQM;
+  const stat = (label: string, val: string) => (
+    <div className="rounded-lg bg-primary-foreground/10 px-3 py-2"><div className="text-[11px] uppercase tracking-wide opacity-80">{label}</div><div className="font-display text-lg font-bold leading-tight">{val}</div></div>
+  );
   return (
     <div className="space-y-3">
       <CadastralDisclaimer />
+      <div className="rounded-xl bg-primary p-3 text-primary-foreground shadow-sm">
+        <div className="mb-2 flex items-center justify-between text-xs opacity-90"><span className="font-semibold">Live measurement</span><span>{value.length} point{value.length === 1 ? "" : "s"}</span></div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {stat("Plots (50×100ft)", v.ok ? (sqft / PLOT_SQFT).toFixed(2) : "—")}
+          {stat("Square feet", v.ok ? Math.round(sqft).toLocaleString("en-NG") : "—")}
+          {stat("Square metres", v.ok ? f1(sqm) : "—")}
+          {stat("Perimeter", per > 0 ? `${Math.round(per * M_TO_FT).toLocaleString("en-NG")} ft` : "—")}
+        </div>
+        {!v.ok && <p className="mt-2 text-xs opacity-90">{value.length < 3 ? `Add ${3 - value.length} more corner${3 - value.length === 1 ? "" : "s"} to see the area.` : v.message}</p>}
+      </div>
       <div className="rounded-lg border bg-card p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm font-semibold">
