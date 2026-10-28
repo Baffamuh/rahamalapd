@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Emblem } from "@/components/site/SiteLayout";
+import { BrandLogo, Emblem } from "@/components/site/SiteLayout";
 import { ADMIN_EMAIL, signIn, signOut, useSignedIn } from "@/lib/auth";
 
 export const Route = createFileRoute("/admin")({
@@ -36,7 +36,7 @@ function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-hero px-4">
       <form className="w-full max-w-sm space-y-4 rounded-2xl bg-card p-8 shadow-xl" onSubmit={(e) => { e.preventDefault(); if (!signIn(email, pw)) toast.error("Incorrect email or password"); }}>
-        <div className="flex items-center gap-2"><Emblem /><div><div className="font-display font-bold">Rahama Admin</div><div className="text-xs text-muted-foreground">Staff sign-in</div></div></div>
+        <div className="flex flex-col items-center gap-2 text-center"><BrandLogo className="h-28" /><div className="text-xs uppercase tracking-widest text-muted-foreground">Staff sign-in</div></div>
         <div><Label>Email</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} /></div>
         <div><Label>Password</Label><Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} /></div>
         <Button type="submit" className="w-full">Sign in</Button>
