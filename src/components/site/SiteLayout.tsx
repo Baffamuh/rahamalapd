@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, type SyntheticEvent } from "react";
 import { Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COMPANY, waLink } from "@/lib/company";
@@ -7,7 +7,7 @@ import emblemAsset from "@/assets/rahama-emblem.png.asset.json";
 import logoAsset from "@/assets/rahama-logo.png.asset.json";
 
 /** Falls back to the locally bundled emblem (/favicon.png) if the CDN image can't load. */
-function fallback(e: React.SyntheticEvent<HTMLImageElement>) {
+function fallback(e: SyntheticEvent<HTMLImageElement>) {
   const img = e.currentTarget;
   if (!img.dataset.fallback) { img.dataset.fallback = "1"; img.src = "/favicon.png"; }
 }
