@@ -36,7 +36,7 @@ function HomePage() {
   const [cat, setCat] = useState("any");
   const [zone, setZone] = useState("any");
   const [budget, setBudget] = useState("any");
-  const featured = db.properties.filter((p) => p.featured && p.status !== "Draft" && p.status !== "Archived").slice(0, 6);
+  const featured = db.properties.filter((p) => p.featured && (p.status === "Published" || p.status === "Reserved" || p.status === "Sold")).slice(0, 6);
   const sold = db.properties.filter((p) => p.status === "Sold").length + db.sales.length;
 
   return (

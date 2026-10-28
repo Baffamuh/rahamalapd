@@ -15,8 +15,10 @@ import { getDb, useDb, useDbAll, zoneLabel } from "@/lib/store";
 import { TITLE_DOCS } from "@/lib/types";
 
 export const Route = createFileRoute("/properties/$slug")({
+  validateSearch: (s: Record<string, unknown>): { invite?: string } => (typeof s.invite === "string" ? { invite: s.invite } : {}),
   loader: ({ params }) => {
     const p = getDb().properties.find((x) => x.slug === params.slug);
+    if (p && p.status === "Private") return { title: undefined, ref: undefined, price: undefined, image: undefined, description: undefined };
     return { title: p?.title, ref: p?.ref, price: p?.price, image: p?.images[0], description: p?.description };
   },
   head: ({ loaderData }) => {
@@ -29,6 +31,8 @@ export const Route = createFileRoute("/properties/$slug")({
         { name: "description", content: d },
         { property: "og:title", content: t },
         { property: "og:description", content: d },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
         ...(img ? [{ property: "og:image", content: img }, { name: "twitter:image", content: img }] : []),
       ],
     };
@@ -38,6 +42,7 @@ export const Route = createFileRoute("/properties/$slug")({
 
 function PropertyPage() {
   const { slug } = Route.useParams();
+  const { invite } = Route.useSearch();
   const db = useDbAll();
   const p = db.properties.find((x) => x.slug === slug);
   const loc = useDb((d) => (p ? zoneLabel(d, p.zoneId, p.subZoneId) : ""));
@@ -45,7 +50,8 @@ function PropertyPage() {
   const [img, setImg] = useState(0);
   const [open, setOpen] = useState(false);
 
-  if (!p || p.status === "Draft" || p.status === "Archived") {
+  const privateBlocked = p?.status === "Private" && (!p.inviteToken || invite !== p.inviteToken);
+  if (!p || p.status === "Draft" || p.status === "Archived" || privateBlocked) {
     return <SiteLayout><div className="mx-auto max-w-xl px-4 py-24 text-center"><h1 className="text-2xl font-bold">Listing not available</h1><p className="mt-2 text-muted-foreground">This property may have been removed.</p><Button asChild className="mt-6"><Link to="/properties">Browse properties</Link></Button></div></SiteLayout>;
   }
   const wa = waLink(propertyWaMessage(p.title, p.ref));
