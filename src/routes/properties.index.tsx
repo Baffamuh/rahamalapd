@@ -105,8 +105,41 @@ function Catalogue() {
               <SheetContent side="left" className="overflow-y-auto"><SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader><div className="px-4"><Filters s={s} set={set} />{active > 0 && <Button variant="ghost" className="mt-3 w-full" onClick={() => navigate({ search: {} })}>Clear filters</Button>}</div></SheetContent>
             </Sheet>
           </div>
-          {list.length === 0 ? <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">No properties match these filters.</div> :
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{list.map((p) => <PropertyCard key={p.id} p={p} />)}</div>}
+          <div className="mb-6 grid grid-cols-3 gap-1 rounded-xl bg-muted p-1 sm:max-w-md">
+            {([[undefined, "All"], ["sale", "For Sale"], ["rent", "For Rent"]] as const).map(([v, l]) => (
+              <button key={l} onClick={() => set({ tx: v })} className={`rounded-lg py-2 text-sm font-medium transition ${s.tx === v ? "bg-card text-primary shadow-sm" : "text-muted-foreground"}`}>{l}</button>
+            ))}
+          </div>
+          {list.length === 0 ? <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">No properties match these filters.</div> : (
+            <div className="space-y-12">
+              {(s.tx ? [s.tx] : (["sale", "rent"] as const)).map((tx) => {
+                const txList = list.filter((p) => p.transaction === tx);
+                if (!txList.length) return null;
+                return (
+                  <section key={tx}>
+                    <h2 className="mb-1 font-display text-2xl font-bold">{tx === "sale" ? "For Sale" : "For Rent"} <span className="text-base font-normal text-muted-foreground">({txList.length})</span></h2>
+                    <div className="mb-5 flex flex-wrap gap-2">
+                      {db.zones.filter((z) => txList.some((p) => p.zoneId === z.id)).map((z) => (
+                        <a key={z.id} href={`#${tx}-${z.id}`} className="rounded-full border bg-card px-3 py-1 text-xs font-medium hover:border-primary">{z.name} · {txList.filter((p) => p.zoneId === z.id).length}</a>
+                      ))}
+                    </div>
+                    <div className="space-y-8">
+                      {db.zones.map((z) => {
+                        const zl = txList.filter((p) => p.zoneId === z.id);
+                        if (!zl.length) return null;
+                        return (
+                          <div key={z.id} id={`${tx}-${z.id}`} className="scroll-mt-24">
+                            <h3 className="mb-3 flex items-center gap-2 border-l-4 border-accent pl-3 font-display text-lg font-semibold">{z.name}<span className="text-sm font-normal text-muted-foreground">{zl.length} listing{zl.length === 1 ? "" : "s"}</span></h3>
+                            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{zl.map((p) => <PropertyCard key={p.id} p={p} />)}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </SiteLayout>
