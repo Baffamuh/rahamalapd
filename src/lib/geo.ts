@@ -9,8 +9,8 @@ export function geodesicArea(points: LatLng[]): number {
   if (points.length < 3) return 0;
   let total = 0;
   for (let i = 0; i < points.length; i++) {
-    const [lat1, lng1] = points[i];
-    const [lat2, lng2] = points[(i + 1) % points.length];
+    const [lat1, lng1] = points[i]!;
+    const [lat2, lng2] = points[(i + 1) % points.length]!;
     total += rad(lng2 - lng1) * (2 + Math.sin(rad(lat1)) + Math.sin(rad(lat2)));
   }
   return Math.abs((total * R * R) / 2);
@@ -28,7 +28,7 @@ export function isSelfIntersecting(points: LatLng[]): boolean {
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
       if (Math.abs(i - j) <= 1 || (i === 0 && j === n - 1)) continue;
-      if (segIntersect(points[i], points[(i + 1) % n], points[j], points[(j + 1) % n])) return true;
+      if (segIntersect(points[i]!, points[(i + 1) % n]!, points[j]!, points[(j + 1) % n]!)) return true;
     }
   }
   return false;

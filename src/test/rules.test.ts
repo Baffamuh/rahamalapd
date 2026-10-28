@@ -22,7 +22,7 @@ describe("business rules", () => {
   it("balance = price − previously paid − paid now", () => expect(saleBalance({ price: 10000000, previouslyPaid: 2000000, amountPaid: 3000000 })).toBe(5000000));
   it("leaderboard ranks by sales volume for the selected year", () => {
     const db = makeSeed();
-    expect(leaderboard(db.agents, db.sales, "2025", "volume")[0].agent.code).toBe("RHM-AGT-002");
+    expect(leaderboard(db.agents, db.sales, "2025", "volume")[0]!.agent.code).toBe("RHM-AGT-002");
   });
   it("inspection with deposit intent scores High", () =>
     expect(scoreLead({ message: "Ready to pay deposit this week", phone: "08051234567", type: "inspection", propertyId: "p1" }).priority).toBe("High"));

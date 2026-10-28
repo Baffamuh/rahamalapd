@@ -18,7 +18,7 @@ export function InstallmentCalculator({ price }: { price: number }) {
       <h3 className="font-display font-semibold">Installment Calculator</h3>
       <div>
         <div className="mb-2 flex justify-between text-sm"><span>Down payment</span><strong>{pct}% · {formatNaira(plan.down)}</strong></div>
-        <Slider min={10} max={90} step={5} value={[pct]} onValueChange={(v) => setPct(v[0])} />
+        <Slider min={10} max={90} step={5} value={[pct]} onValueChange={(v) => setPct(v[0] ?? pct)} />
       </div>
       <div className="grid grid-cols-3 gap-2">
         {[3, 6, 12].map((m) => (

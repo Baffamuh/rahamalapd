@@ -10,7 +10,7 @@ export const CATEGORIES: Category[] = ["Residential Land", "Commercial Land", "H
 export const STATUSES: PropertyStatus[] = ["Draft", "Published", "Reserved", "Sold", "Archived"];
 export const TITLE_DOCS = ["C-of-O", "R-of-O", "Survey Plan", "Deed of Assignment"] as const;
 
-export type Survey = { area?: number; number?: string; authority?: string; date?: string };
+export type Survey = { area?: number | undefined; number?: string | undefined; authority?: string | undefined; date?: string } | undefined;
 
 export type Property = {
   id: string;
@@ -25,8 +25,8 @@ export type Property = {
   price: number;
   plots: number;
   dimensions: string;
-  bedrooms?: number;
-  bathrooms?: number;
+  bedrooms?: number | undefined;
+  bathrooms?: number | undefined;
   status: PropertyStatus;
   featured: boolean;
   images: string[];
@@ -76,7 +76,7 @@ export type Enquiry = {
   message: string;
   propertyId: string | null;
   type: "enquiry" | "inspection";
-  preferredDate?: string;
+  preferredDate?: string | undefined;
   status: EnquiryStatus;
   notes: string;
   createdAt: string;

@@ -6,7 +6,7 @@ import { COMPANY } from "@/lib/company";
 
 export type LeafletMapProps = {
   points: LatLng[];
-  onAddPoint?: (p: LatLng) => void;
+  onAddPoint?: ((p: LatLng) => void) | undefined;
   markers?: { pos: LatLng; label: string }[];
   center?: LatLng;
   zoom?: number;
