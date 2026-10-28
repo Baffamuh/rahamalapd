@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ExternalLink, Pencil, Plus, Trash2, X } from "lucide-react";
+import { BadgeCheck, ExternalLink, Pencil, Plus, Trash2, X } from "lucide-react";
+import { SaleForm } from "@/components/admin/SaleForm";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +26,7 @@ function AdminProperties() {
   const db = useDbAll();
   const [q, setQ] = useState("");
   const [edit, setEdit] = useState<Property | null>(null);
+  const [selling, setSelling] = useState<Property | null>(null);
   const list = db.properties.filter((p) => `${p.title} ${p.ref}`.toLowerCase().includes(q.toLowerCase()));
   const setStatus = (id: string, status: PropertyStatus) => updateDb((d) => ({ ...d, properties: d.properties.map((p) => (p.id === id ? { ...p, status } : p)) }), `Status → ${status}`);
 
@@ -45,6 +47,7 @@ function AdminProperties() {
                 <td className="p-3 font-medium">{formatNaira(p.price)}</td>
                 <td className="p-3"><select className="rounded-md border bg-background px-2 py-1 text-xs" value={p.status} onChange={(e) => setStatus(p.id, e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select></td>
                 <td className="p-3 text-right whitespace-nowrap">
+                  {p.status !== "Sold" && p.status !== "Archived" && <Button size="sm" className="mr-1" onClick={() => setSelling(p)}><BadgeCheck className="mr-1 h-4 w-4" /> Mark as Sold</Button>}
                   <Button size="icon" variant="ghost" asChild><Link to="/properties/$slug" params={{ slug: p.slug }} target="_blank"><ExternalLink className="h-4 w-4" /></Link></Button>
                   <Button size="icon" variant="ghost" onClick={() => setEdit(p)}><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => confirm(`Delete ${p.title}?`) && updateDb((d) => ({ ...d, properties: d.properties.filter((x) => x.id !== p.id) }), `Listing deleted: ${p.title}`)}><Trash2 className="h-4 w-4" /></Button>
@@ -54,6 +57,9 @@ function AdminProperties() {
           </tbody>
         </table>
       </div>
+      <Dialog open={!!selling} onOpenChange={(o) => !o && setSelling(null)}>
+        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Mark as Sold — {selling?.ref}</DialogTitle></DialogHeader>{selling && <SaleForm propertyId={selling.id} onDone={() => setSelling(null)} />}</DialogContent>
+      </Dialog>
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
         <DialogContent className="max-h-[92vh] max-w-4xl overflow-y-auto">
           <DialogHeader><DialogTitle>{edit?.id ? "Edit listing" : "New listing"}</DialogTitle></DialogHeader>

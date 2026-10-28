@@ -3,16 +3,15 @@ import { useState, type ReactNode } from "react";
 import { Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COMPANY, waLink } from "@/lib/company";
+import emblemAsset from "@/assets/rahama-emblem.png.asset.json";
+import logoAsset from "@/assets/rahama-logo.png.asset.json";
 
 export function Emblem({ className = "h-9 w-9" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 40 40" className={className} aria-hidden>
-      <rect width="40" height="40" rx="10" className="fill-primary" />
-      <path d="M8 21 20 10l12 11" className="stroke-accent" strokeWidth="3.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M12 19v11h16V19" className="stroke-primary-foreground" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
-      <rect x="17.5" y="23" width="5" height="7" className="fill-accent" />
-    </svg>
-  );
+  return <img src={emblemAsset.url} alt="Rahama Land and Property logo" className={`${className} object-contain`} />;
+}
+
+export function BrandLogo({ className = "h-24" }: { className?: string }) {
+  return <img src={logoAsset.url} alt="Rahama Land and Property — RC NO. 9871926" className={`${className} w-auto object-contain`} />;
 }
 
 const NAV = [

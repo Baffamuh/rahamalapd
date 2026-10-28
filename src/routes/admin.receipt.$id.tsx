@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Emblem } from "@/components/site/SiteLayout";
+import { BrandLogo, Emblem } from "@/components/site/SiteLayout";
 import { COMPANY, formatNaira } from "@/lib/company";
 import { saleBalance } from "@/lib/leaderboard";
 import { useDbAll, zoneLabel } from "@/lib/store";
@@ -28,21 +28,23 @@ function ReceiptPage() {
         <Link to="/admin/agents" className="text-sm text-muted-foreground hover:underline">← Back to sales</Link>
         <Button onClick={() => window.print()}><Printer className="mr-1 h-4 w-4" /> Print / Save PDF</Button>
       </div>
-      <div className="print-area mx-auto max-w-[210mm] rounded-lg border bg-card p-10 text-card-foreground shadow-sm">
-        <header className="flex items-start justify-between border-b-4 border-primary pb-5">
-          <div className="flex gap-3">
-            <Emblem className="h-14 w-14" />
+      <div className="print-area relative mx-auto max-w-[210mm] overflow-hidden rounded-lg border bg-card p-10 text-card-foreground shadow-sm">
+        <Emblem className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 opacity-[0.05]" />
+        <header className="relative flex items-center justify-between gap-6 border-b-4 border-primary pb-5">
+          <div className="flex items-center gap-4">
+            <BrandLogo className="h-20 shrink-0" />
             <div>
-              <div className="font-display text-xl font-bold text-primary">{COMPANY.name}</div>
+              <div className="font-display text-base font-bold leading-snug text-primary">{COMPANY.name}</div>
               <div className="text-xs font-semibold">{COMPANY.rc}</div>
               <div className="mt-1 text-xs text-muted-foreground">{COMPANY.address}</div>
               <div className="text-xs text-muted-foreground">{COMPANY.phones.join(" · ")} · {COMPANY.email}</div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="font-display text-lg font-bold uppercase tracking-wide">Sales Invoice &amp; Official Receipt</div>
-            <div className="mt-1 font-mono text-sm">{s.receiptNo}</div>
-            <div className="text-xs text-muted-foreground">{new Date(s.date).toLocaleString("en-NG", { dateStyle: "long", timeStyle: "short" })}</div>
+          <div className="shrink-0 text-right">
+            <div className="font-display text-base font-bold uppercase tracking-wide">Sales Invoice &amp; Official Receipt</div>
+            <div className="mt-1 inline-block rounded bg-primary px-2 py-0.5 font-mono text-sm text-primary-foreground">{s.receiptNo}</div>
+            <div className="mt-1 text-xs text-muted-foreground">{new Date(s.date).toLocaleString("en-NG", { dateStyle: "long", timeStyle: "short" })}</div>
+            <div className="mt-3 inline-block -rotate-6 rounded-md border-4 border-primary px-3 py-1 font-display text-lg font-extrabold tracking-widest text-primary">{saleBalance(s) <= 0 ? "PAID IN FULL" : "PAYMENT RECEIVED"}</div>
           </div>
         </header>
 
