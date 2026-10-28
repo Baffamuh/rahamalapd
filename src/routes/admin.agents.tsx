@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Printer, Receipt, Trophy, Users, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -146,6 +146,7 @@ function AgentForm({ initial, onDone }: { initial: Agent; onDone: () => void }) 
 
 function SaleForm({ onDone }: { onDone: () => void }) {
   const db = useDbAll();
+  const navigate = useNavigate();
   const sellable = db.properties.filter((p) => p.status !== "Sold" && p.status !== "Archived");
   const [f, setF] = useState({ propertyId: sellable[0]?.id ?? "", agentId: db.agents.find((a) => a.active)?.id ?? "", buyerName: "", buyerPhone: "", price: sellable[0]?.price ?? 0, previouslyPaid: 0, amountPaid: 0, method: "Bank Transfer" as PaymentMethod, commission: 0 });
   const num = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: Number(e.target.value) || 0 });
@@ -163,7 +164,7 @@ function SaleForm({ onDone }: { onDone: () => void }) {
       }), `Sale recorded: ${prop.title} → ${f.buyerName.trim()}`);
       toast.success("Sale recorded — property marked Sold");
       onDone();
-      window.location.assign(`/admin/receipt/${id}`);
+      navigate({ to: "/admin/receipt/$id", params: { id } });
     }}>
       <div><Label>Property</Label><select className={sel} value={f.propertyId} onChange={(e) => setF({ ...f, propertyId: e.target.value, price: db.properties.find((p) => p.id === e.target.value)?.price ?? 0 })}>{sellable.map((p) => <option key={p.id} value={p.id}>{p.ref} — {p.title}</option>)}</select></div>
       <div><Label>Responsible agent</Label><select className={sel} value={f.agentId} onChange={(e) => setF({ ...f, agentId: e.target.value })}>{db.agents.filter((a) => a.active).map((a) => <option key={a.id} value={a.id}>{a.code} — {a.name}</option>)}</select></div>
