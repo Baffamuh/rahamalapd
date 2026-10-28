@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BoundaryDrawer } from "@/components/map/BoundaryDrawer";
 import { formatNaira } from "@/lib/company";
+import { watermarkPhoto } from "@/lib/watermark";
 import { nextRef, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
 import { CATEGORIES, STATUSES, TITLE_DOCS, type Property, type PropertyStatus } from "@/lib/types";
 
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/admin/properties")({ component: AdminProp
 const sel = "h-9 w-full rounded-md border bg-background px-2 text-sm";
 
 function blank(): Property {
-  return { id: "", slug: "", ref: "", title: "", transaction: "sale", category: "Residential Land", zoneId: "", subZoneId: "", areaId: "", price: 0, plots: 1, dimensions: "50ft × 100ft", status: "Draft", featured: false, images: [], description: "", titleDocs: [], boundary: [], survey: {}, createdAt: "" };
+  return { id: "", slug: "", ref: "", title: "", transaction: "sale", category: "Residential Land", zoneId: "", subZoneId: "", areaId: "", price: 0, plots: 1, dimensions: "50ft × 100ft", status: "Published", featured: false, images: [], description: "", titleDocs: [], boundary: [], survey: {}, createdAt: "" };
 }
 
 function AdminProperties() {
@@ -131,34 +132,25 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
 
   const save = () => {
     if (!f.title.trim() || !f.zoneId || !f.subZoneId || f.price <= 0) { toast.error("Title, zone, sub-zone and price are required."); return; }
-    updateDb((d) => {
+    const ok = updateDb((d) => {
       const z = d.zones.find((x) => x.id === f.zoneId)!;
       if (f.id) return { ...d, properties: d.properties.map((p) => (p.id === f.id ? f : p)) };
       const ref = nextRef(d, z.code);
       const slug = f.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + ref.slice(-3).toLowerCase() + z.code.toLowerCase();
       return { ...d, properties: [{ ...f, id: uid(), ref, slug, createdAt: new Date().toISOString().slice(0, 10), images: f.images.length ? f.images : ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=70"] }, ...d.properties] };
     }, `${f.id ? "Listing updated" : "Listing created"}: ${f.title}`);
-    toast.success("Listing saved");
+    if (!ok) { toast.error("Not saved: storage is full. Remove some photos (or old listings) and try again."); return; }
+    toast.success(f.status === "Published" ? "Listing saved and live on the website" : `Listing saved as ${f.status} — not visible on the website yet`);
     onDone();
   };
 
-  const onFile = (files: FileList | null) => {
-    Array.from(files ?? []).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const im = new Image();
-        im.onload = () => {
-          const c = document.createElement("canvas");
-          const s = Math.min(1, 1200 / im.width);
-          c.width = im.width * s; c.height = im.height * s;
-          c.getContext("2d")!.drawImage(im, 0, 0, c.width, c.height);
-          const url = c.toDataURL("image/jpeg", 0.7);
-          setF((p) => ({ ...p, images: [...p.images, url] }));
-        };
-        im.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
+  const [busy, setBusy] = useState(false);
+  const onFile = async (files: FileList | null) => {
+    setBusy(true);
+    for (const file of Array.from(files ?? [])) {
+      try { const url = await watermarkPhoto(file); setF((p) => ({ ...p, images: [...p.images, url] })); } catch { toast.error(`Could not read ${file.name}`); }
+    }
+    setBusy(false);
   };
 
   return (
@@ -190,7 +182,8 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
       <div className="space-y-2 rounded-xl border p-4"><h3 className="font-semibold">3. Photos</h3>
         <div className="flex flex-wrap gap-2">{f.images.map((src, i) => <div key={i} className="relative"><img src={src} alt="" className="h-16 w-24 rounded object-cover" /><button className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground" onClick={() => set("images", f.images.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button></div>)}</div>
         <div className="flex gap-2"><Input placeholder="Paste image URL" value={imgUrl} onChange={(e) => setImgUrl(e.target.value)} /><Button type="button" variant="outline" onClick={() => { if (imgUrl.trim()) { set("images", [...f.images, imgUrl.trim()]); setImgUrl(""); } }}>Add</Button></div>
-        <Input type="file" accept="image/*" multiple onChange={(e) => onFile(e.target.files)} />
+        <Input type="file" accept="image/*" multiple disabled={busy} onChange={(e) => { onFile(e.target.files); e.target.value = ""; }} />
+        <p className="text-xs text-muted-foreground">{busy ? "Adding your logo to photos…" : "Your Rahama logo is added automatically to every uploaded photo."}</p>
       </div>
 
       <div className="space-y-2 rounded-xl border p-4">
