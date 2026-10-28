@@ -95,10 +95,10 @@ function AdminProperties() {
         </table>
       </div>}
       <Dialog open={!!selling} onOpenChange={(o) => !o && setSelling(null)}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Mark as Sold — {selling?.ref}</DialogTitle></DialogHeader>{selling && <SaleForm propertyId={selling.id} onDone={() => setSelling(null)} />}</DialogContent>
+        <DialogContent className="max-h-[94vh] w-[calc(100vw-1rem)] max-w-lg overflow-y-auto"><DialogHeader><DialogTitle>Mark as Sold — {selling?.ref}</DialogTitle></DialogHeader>{selling && <SaleForm propertyId={selling.id} onDone={() => setSelling(null)} />}</DialogContent>
       </Dialog>
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
-        <DialogContent className="max-h-[92vh] max-w-4xl overflow-y-auto">
+        <DialogContent className="max-h-[94vh] w-[calc(100vw-1rem)] max-w-4xl overflow-y-auto p-4 sm:p-6">
           <DialogHeader><DialogTitle>{edit?.id ? "Edit listing" : "New listing"}</DialogTitle></DialogHeader>
           {edit && <PropertyForm initial={edit} onDone={() => setEdit(null)} />}
         </DialogContent>
@@ -149,7 +149,8 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
+        <h3 className="font-semibold sm:col-span-2">1. Listing details</h3>
         <div className="sm:col-span-2"><Label>Title</Label><Input value={f.title} onChange={(e) => set("title", e.target.value)} /></div>
         <div><Label>Transaction</Label><select className={sel} value={f.transaction} onChange={(e) => set("transaction", e.target.value as "sale" | "rent")}><option value="sale">For Sale</option><option value="rent">For Rent</option></select></div>
         <div><Label>Category</Label><select className={sel} value={f.category} onChange={(e) => set("category", e.target.value as Property["category"])}>{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></div>
@@ -168,23 +169,23 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
         <label className="flex items-center gap-2 text-sm"><Checkbox checked={f.featured} onCheckedChange={(v) => set("featured", !!v)} /> Feature on homepage</label>
       </div>
 
-      <div><Label>Title documents</Label>
+      <div className="rounded-xl border p-4"><h3 className="mb-2 font-semibold">2. Title documents</h3>
         <div className="mt-2 flex flex-wrap gap-4">{TITLE_DOCS.map((d) => <label key={d} className="flex items-center gap-2 text-sm"><Checkbox checked={f.titleDocs.includes(d)} onCheckedChange={(v) => set("titleDocs", v ? [...f.titleDocs, d] : f.titleDocs.filter((x) => x !== d))} />{d}</label>)}</div>
       </div>
 
-      <div className="space-y-2"><Label>Images</Label>
+      <div className="space-y-2 rounded-xl border p-4"><h3 className="font-semibold">3. Photos</h3>
         <div className="flex flex-wrap gap-2">{f.images.map((src, i) => <div key={i} className="relative"><img src={src} alt="" className="h-16 w-24 rounded object-cover" /><button className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground" onClick={() => set("images", f.images.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button></div>)}</div>
         <div className="flex gap-2"><Input placeholder="Paste image URL" value={imgUrl} onChange={(e) => setImgUrl(e.target.value)} /><Button type="button" variant="outline" onClick={() => { if (imgUrl.trim()) { set("images", [...f.images, imgUrl.trim()]); setImgUrl(""); } }}>Add</Button></div>
         <Input type="file" accept="image/*" multiple onChange={(e) => onFile(e.target.files)} />
       </div>
 
       <div className="space-y-2 rounded-xl border p-4">
-        <h3 className="font-semibold">Map boundary (estimated)</h3>
+        <h3 className="font-semibold">4. Map boundary &amp; measurement</h3>
         <BoundaryDrawer value={f.boundary} onChange={(b) => set("boundary", b)} />
       </div>
 
       <div className="space-y-3 rounded-xl border p-4">
-        <h3 className="font-semibold">Certified survey details</h3>
+        <h3 className="font-semibold">5. Certified survey details</h3>
         <div className="grid gap-3 sm:grid-cols-2">
           <div><Label>Verified surveyor area (m²)</Label><Input type="number" value={f.survey.area ?? ""} onChange={(e) => set("survey", { ...f.survey, area: Number(e.target.value) || undefined })} /></div>
           <div><Label>Survey plan / beacon number</Label><Input placeholder="BAU/AZR/2026/SP-104" value={f.survey.number ?? ""} onChange={(e) => set("survey", { ...f.survey, number: e.target.value })} /></div>
@@ -193,7 +194,7 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
         </div>
       </div>
 
-      <div className="flex justify-end gap-2"><Button variant="outline" onClick={onDone}>Cancel</Button><Button onClick={save}>Save listing</Button></div>
+      <div className="sticky bottom-0 -mx-4 flex justify-end gap-2 border-t bg-background px-4 py-3 sm:-mx-6 sm:px-6"><Button variant="outline" onClick={onDone}>Cancel</Button><Button onClick={save}>Save listing</Button></div>
     </div>
   );
 }
