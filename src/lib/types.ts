@@ -10,7 +10,7 @@ export const CATEGORIES: Category[] = ["Residential Land", "Commercial Land", "H
 export const STATUSES: PropertyStatus[] = ["Draft", "Published", "Reserved", "Sold", "Archived"];
 export const TITLE_DOCS = ["C-of-O", "R-of-O", "Survey Plan", "Deed of Assignment"] as const;
 
-export type Survey = { area?: number | undefined; number?: string | undefined; authority?: string | undefined; date?: string } | undefined;
+export type Survey = { area?: number | undefined; number?: string | undefined; authority?: string | undefined; date?: string | undefined };
 
 export type Property = {
   id: string;
