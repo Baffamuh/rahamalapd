@@ -1,57 +1,50 @@
-import { useSyncExternalStore } from "react";
-import { makeSeed } from "./seed";
+import { createContext, useContext } from "react";
+import { useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { adminDbOptions, publicDbOptions } from './cloud-query';
+import { saveChanges } from './cloud.functions';
+import { changesBetween } from './cloud-diff';
 import type { DB } from "./types";
 
-const KEY = "rahama-db-v1";
-let serverDb: DB | null = null;
-let db: DB | null = null;
-const listeners = new Set<() => void>();
+export const DbScope = createContext<{ admin?: boolean; slug?: string; invite?: string }>({});
+let browserClient: QueryClient | undefined;
+let queue: Promise<unknown> = Promise.resolve();
+export function connectStore(client: QueryClient) { browserClient = client; }
 
-function load(): DB {
-  if (db) return db;
-  if (typeof window === "undefined") return (serverDb ??= makeSeed());
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    db = raw ? (JSON.parse(raw) as DB) : makeSeed();
-  } catch {
-    db = makeSeed();
-  }
-  return db;
-}
-
-export function getDb(): DB {
-  return load();
-}
-
-/** Returns false when the browser storage is full and the change could not be saved. */
-export function updateDb(fn: (d: DB) => DB, activity?: string): boolean {
-  const prev = load();
-  let next = fn(prev);
-  if (activity) {
-    next = { ...next, activity: [{ id: uid(), text: activity, at: new Date().toISOString() }, ...next.activity].slice(0, 50) };
-  }
-  try { window.localStorage.setItem(KEY, JSON.stringify(next)); } catch { return false; }
-  db = next;
-  listeners.forEach((l) => l());
-  return true;
-}
-
-export function resetDb() {
-  updateDb(() => makeSeed());
+/** Persist atomically; do not report success until the cloud confirms the change. */
+export function updateDb(fn: (d: DB) => DB, activity?: string): Promise<boolean> {
+  const run = async () => {
+    const client = browserClient;
+    if (!client) return false;
+    try {
+      const prev = client.getQueryData<DB>(adminDbOptions.queryKey);
+      if (!prev) throw new Error('Open the staff portal before saving.');
+      let next = fn(prev);
+      if (activity) next = { ...next, activity: [{ id: uid(), text: activity, at: new Date().toISOString() }, ...next.activity].slice(0,50) };
+      const changes = changesBetween(prev, next);
+      if (changes.length) await saveChanges({ data: changes });
+      await client.invalidateQueries({ queryKey: adminDbOptions.queryKey });
+      await client.invalidateQueries({ queryKey: ['public-db'] });
+      return true;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Not saved. Check your connection and try again.');
+      await client.invalidateQueries({ queryKey: adminDbOptions.queryKey });
+      return false;
+    }
+  };
+  const result = queue.then(run, run);
+  queue = result;
+  return result;
 }
 
 export function uid() {
-  return Math.random().toString(36).slice(2, 10);
+  return crypto.randomUUID();
 }
 
-const serverSnap = () => (serverDb ??= makeSeed());
-
 export function useDb<T>(select: (d: DB) => T): T {
-  return useSyncExternalStore(
-    (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
-    () => select(load()),
-    () => select(serverSnap()),
-  );
+  const scope = useContext(DbScope);
+  const { data } = useSuspenseQuery(scope.admin ? adminDbOptions : publicDbOptions(scope.slug, scope.invite));
+  return select(data);
 }
 
 export function useDbAll(): DB {
