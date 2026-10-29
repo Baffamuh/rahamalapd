@@ -68,6 +68,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string
+          display_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string
+          display_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           created_at: string
@@ -148,6 +169,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_staff_changes: { Args: { _changes: Json }; Returns: undefined }
       get_invite_property: {
         Args: { _slug: string; _token: string }
         Returns: Json

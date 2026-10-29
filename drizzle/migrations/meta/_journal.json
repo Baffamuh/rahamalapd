@@ -8,6 +8,13 @@
       "when": 1793184868796,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793233365802,
+      "tag": "0001_staff_profiles_atomic_cloud_edits",
+      "breakpoints": true
     }
   ]
 }
