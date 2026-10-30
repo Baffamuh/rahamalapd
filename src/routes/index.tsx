@@ -36,7 +36,11 @@ function HomePage() {
   const [cat, setCat] = useState("any");
   const [zone, setZone] = useState("any");
   const [budget, setBudget] = useState("any");
-  const featured = db.properties.filter((p) => p.featured && (p.status === "Published" || p.status === "Reserved" || p.status === "Sold")).slice(0, 6);
+  const [tx, setTx] = useState<"sale" | "rent">("sale");
+  const visible = db.properties.filter((p) => p.status === "Published" || p.status === "Reserved" || p.status === "Sold");
+  const txList = visible.filter((p) => p.transaction === tx);
+  const featured = [...txList.filter((p) => p.featured), ...txList.filter((p) => !p.featured)].slice(0, 6);
+  const cats = CATEGORIES.map((c) => [c, txList.filter((p) => p.category === c).length] as const).filter(([, n]) => n > 0);
   const sold = db.properties.filter((p) => p.status === "Sold").length + db.sales.length;
 
   return (
