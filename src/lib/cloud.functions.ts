@@ -5,12 +5,20 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import type { Database } from '@/integrations/supabase/types';
 import type { DB, Property } from './types';
 
+// Public (publishable) connection details; safe to bundle. Used when hosting (e.g. Vercel) lacks env vars.
+const FALLBACK_URL = 'https://c--b79d9f5a-c357-4fef-8641-06fba0048bce-prod.lovable.cloud';
+const FALLBACK_KEY = 'sb_publishable_ab4jSfw9z8QW4pjGPW2tWQ_sGIayObW';
+function cloudEnv() {
+  const env = process.env;
+  const url = env['SUPABASE_URL'] || env['VITE_SUPABASE_URL'] || FALLBACK_URL;
+  const key = env['SUPABASE_PUBLISHABLE_KEY'] || env['VITE_SUPABASE_PUBLISHABLE_KEY'] || FALLBACK_KEY;
+  return { url, key };
+}
+
 export const getPublicDb = createServerFn({ method: 'GET' })
   .inputValidator((input: { slug?: string; invite?: string } = {}) => z.object({ slug: z.string().max(200).optional(), invite: z.string().max(200).optional() }).parse(input))
   .handler(async ({ data }) => {
-    const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
-    const url = process.env['SUPABASE_URL'];
-    if (!key || !url) throw new Error('Cloud connection is unavailable');
+    const { url, key } = cloudEnv();
     const client = createClient<Database>(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: { fetch: (input, init) => {
@@ -21,7 +29,10 @@ export const getPublicDb = createServerFn({ method: 'GET' })
       } },
     });
     const [zones, properties] = await Promise.all([client.from('zones').select('data'), client.from('properties').select('data')]);
-    if (zones.error || properties.error) throw new Error('Could not load listings. Please try again.');
+    if (zones.error || properties.error) {
+      console.error('Public listings load failed', zones.error ?? properties.error);
+      return { zones: [], properties: [], agents: [], sales: [], enquiries: [], activity: [] } as DB;
+    }
     const db: DB = { zones: zones.data.map(r => r.data) as unknown as DB['zones'], properties: properties.data.map(r => r.data) as unknown as Property[], agents: [], sales: [], enquiries: [], activity: [] };
     // Never expose invitation secrets in public catalogue responses.
     db.properties = db.properties.map(({ inviteToken: _token, ...p }) => p);
