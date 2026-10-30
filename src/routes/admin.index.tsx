@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Building2, Inbox, MapPin, Plus, Printer, Receipt, TrendingUp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/company";
-import { resetDb, useDbAll } from "@/lib/store";
+import { useDbAll } from "@/lib/store";
 
 export const Route = createFileRoute("/admin/")({ component: Dashboard });
 
@@ -69,7 +69,7 @@ function Dashboard() {
           <ul className="mt-3 space-y-3">{db.activity.slice(0, 8).map((a) => <li key={a.id} className="flex gap-3 text-sm"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" /><div className="min-w-0"><div className="truncate">{a.text}</div><div className="text-xs text-muted-foreground">{new Date(a.at).toLocaleString("en-NG")}</div></div></li>)}</ul>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">Data is stored in this browser. <button className="underline" onClick={() => { if (confirm("Reset all data to the sample set?")) resetDb(); }}>Reset sample data</button></p>
+      <p className="text-xs text-muted-foreground">Data is saved securely online and shared across all staff devices.</p>
     </div>
   );
 }

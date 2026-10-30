@@ -12,4 +12,6 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // On Vercel builds (VERCEL env is set), output Vercel serverless functions.
+  ...(process.env["VERCEL"] ? { nitro: { preset: "vercel" } } : {}),
 });

@@ -36,7 +36,11 @@ function HomePage() {
   const [cat, setCat] = useState("any");
   const [zone, setZone] = useState("any");
   const [budget, setBudget] = useState("any");
-  const featured = db.properties.filter((p) => p.featured && (p.status === "Published" || p.status === "Reserved" || p.status === "Sold")).slice(0, 6);
+  const [tx, setTx] = useState<"sale" | "rent">("sale");
+  const visible = db.properties.filter((p) => p.status === "Published" || p.status === "Reserved" || p.status === "Sold");
+  const txList = visible.filter((p) => p.transaction === tx);
+  const featured = [...txList.filter((p) => p.featured), ...txList.filter((p) => !p.featured)].slice(0, 6);
+  const cats = CATEGORIES.map((c) => [c, txList.filter((p) => p.category === c).length] as const).filter(([, n]) => n > 0);
   const sold = db.properties.filter((p) => p.status === "Sold").length + db.sales.length;
 
   return (
@@ -83,13 +87,30 @@ function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16">
-        <div className="flex items-end justify-between">
-          <div><h2 className="text-3xl font-bold">Featured properties</h2><p className="mt-1 text-muted-foreground">Hand-picked listings with verified documentation.</p></div>
-          <Button asChild variant="outline"><Link to="/properties">View all</Link></Button>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div><h2 className="text-3xl font-bold">Browse properties</h2><p className="mt-1 text-muted-foreground">Choose For Sale or For Rent, then pick a category.</p></div>
+          <div className="inline-flex rounded-full border bg-card p-1">
+            {(["sale", "rent"] as const).map((t) => (
+              <button key={t} onClick={() => setTx(t)} className={`rounded-full px-5 py-2 text-sm font-semibold transition ${tx === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t === "sale" ? "For Sale" : "For Rent"}</button>
+            ))}
+          </div>
         </div>
+        {cats.length > 0 && (
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {cats.map(([c, n]) => (
+              <Link key={c} to="/properties" search={{ category: c }} className="rounded-xl border bg-card p-4 transition hover:border-primary hover:shadow-md">
+                <Building2 className="h-6 w-6 text-primary" />
+                <div className="mt-2 text-sm font-semibold">{c}</div>
+                <div className="text-xs text-muted-foreground">{n} listing{n === 1 ? "" : "s"}</div>
+              </Link>
+            ))}
+          </div>
+        )}
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((p) => <PropertyCard key={p.id} p={p} />)}
         </div>
+        {featured.length === 0 && <p className="mt-8 text-center text-muted-foreground">No properties {tx === "sale" ? "for sale" : "for rent"} right now.</p>}
+        <div className="mt-8 text-center"><Button asChild variant="outline"><Link to="/properties">View all properties</Link></Button></div>
       </section>
 
       <section className="bg-secondary py-16">

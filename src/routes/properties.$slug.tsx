@@ -11,15 +11,17 @@ import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { MapView } from "@/components/map/MapView";
 import { AreaSummary, CadastralDisclaimer } from "@/components/map/AreaSummary";
 import { COMPANY, formatNaira, propertyWaMessage, waLink } from "@/lib/company";
-import { getDb, useDb, useDbAll, zoneLabel } from "@/lib/store";
-import { TITLE_DOCS } from "@/lib/types";
+import { useDb, useDbAll, zoneLabel } from "@/lib/store";
+import { publicDbOptions } from "@/lib/cloud-query";
+import { TITLE_DOCS, type Property } from "@/lib/types";
 
 export const Route = createFileRoute("/properties/$slug")({
   validateSearch: (s: Record<string, unknown>): { invite?: string } => (typeof s['invite'] === "string" ? { invite: s['invite'] } : {}),
-  loader: ({ params }) => {
-    const p = getDb().properties.find((x) => x.slug === params.slug);
-    if (p && p.status === "Private") return { title: undefined, ref: undefined, price: undefined, image: undefined, description: undefined };
-    return { title: p?.title, ref: p?.ref, price: p?.price, image: p?.images[0], description: p?.description };
+  loader: async ({ params, context }) => {
+    const db = await context.queryClient.ensureQueryData(publicDbOptions()).catch(() => null);
+    const p = db?.properties.find((x: Property) => x.slug === params.slug);
+    if (!p || p.status === "Private") return { title: undefined, ref: undefined, price: undefined, image: undefined, description: undefined };
+    return { title: p.title, ref: p.ref, price: p.price, image: p.images[0]?.startsWith("http") ? p.images[0] : undefined, description: p.description };
   },
   head: ({ loaderData }) => {
     const t = loaderData?.title ? `${loaderData.title} (${loaderData.ref}) | Rahama Property` : "Property details | Rahama Property";
