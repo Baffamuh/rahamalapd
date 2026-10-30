@@ -1,4 +1,3 @@
-import emblemAsset from "@/assets/rahama-emblem.png.asset.json";
 
 let logoP: Promise<HTMLImageElement | null> | null = null;
 function loadLogo() {
@@ -7,7 +6,7 @@ function loadLogo() {
     im.crossOrigin = "anonymous";
     im.onload = () => res(im);
     im.onerror = () => res(null);
-    im.src = emblemAsset.url;
+    im.src = "/rahama-emblem.png";
   });
   return logoP;
 }

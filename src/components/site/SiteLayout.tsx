@@ -3,8 +3,6 @@ import { useState, type ReactNode, type SyntheticEvent } from "react";
 import { Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COMPANY, waLink } from "@/lib/company";
-import emblemAsset from "@/assets/rahama-emblem.png.asset.json";
-import logoAsset from "@/assets/rahama-logo.png.asset.json";
 
 /** Falls back to the locally bundled emblem (/favicon.png) if the CDN image can't load. */
 function fallback(e: SyntheticEvent<HTMLImageElement>) {
@@ -13,13 +11,13 @@ function fallback(e: SyntheticEvent<HTMLImageElement>) {
 }
 
 export function Emblem({ className = "h-9 w-9", framed = false }: { className?: string; framed?: boolean }) {
-  const img = <img src={emblemAsset.url} onError={fallback} alt="Rahama Land and Property logo" className={`${framed ? "h-full w-full" : className} object-contain`} />;
+  const img = <img src={"/rahama-emblem.png"} onError={fallback} alt="Rahama Land and Property logo" className={`${framed ? "h-full w-full" : className} object-contain`} />;
   if (!framed) return img;
   return <span className={`${className} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-card p-0.5 shadow-sm`}>{img}</span>;
 }
 
 export function BrandLogo({ className = "h-24" }: { className?: string }) {
-  return <img src={logoAsset.url} onError={fallback} alt="Rahama Land and Property — RC NO. 9871926" className={`${className} w-auto object-contain`} />;
+  return <img src={"/rahama-logo.png"} onError={fallback} alt="Rahama Land and Property — RC NO. 9871926" className={`${className} w-auto object-contain`} />;
 }
 
 const NAV = [
