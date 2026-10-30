@@ -70,9 +70,7 @@ export const saveChanges = createServerFn({ method: 'POST' }).middleware([requir
 export const sendEnquiry = createServerFn({ method: 'POST' })
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(100), phone: z.string().max(20), email: z.string().max(255), message: z.string().max(1000), propertyId: z.string().nullable(), type: z.enum(['enquiry','inspection']), preferredDate: z.string().optional() }).refine(e => e.phone.trim() || e.email.trim(), 'Phone or email required').parse(input))
   .handler(async ({ data }) => {
-    const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
-    const url = process.env['SUPABASE_URL'];
-    if (!key || !url) throw new Error('Cloud connection is unavailable');
+    const { url, key } = cloudEnv();
     const response = await fetch(`${url}/rest/v1/enquiries`, { method: 'POST', headers: { apikey: key, 'Content-Type': 'application/json' }, body: JSON.stringify({ id: data.id, data: { ...data, status: 'New', notes: '', createdAt: new Date().toISOString() } }) });
     if (!response.ok) throw new Error('Your request was not sent. Please try again.');
     return true;
