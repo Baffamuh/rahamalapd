@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Real cloud sign-in. Staff access is granted by the database (user_roles) for confirmed company emails.
 export const ADMIN_EMAIL = "rahmalapd@gmail.com";
-export type AuthState = { loading: boolean; email?: string; isAdmin: boolean };
+export type AuthState = { loading: boolean; email?: string | undefined; isAdmin: boolean };
 
 async function check(): Promise<AuthState> {
   const { data } = await supabase.auth.getUser();

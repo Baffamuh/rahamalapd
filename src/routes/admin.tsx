@@ -33,7 +33,7 @@ const NAV = [
   { to: "/admin/locations", label: "Locations", icon: Map },
 ] as const;
 
-function Login({ notStaff }: { notStaff?: string }) {
+function Login({ notStaff }: { notStaff?: string | undefined }) {
   const [mode, setMode] = useState<"in" | "up" | "reset">("in");
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [pw, setPw] = useState("");
@@ -73,7 +73,7 @@ function NewPassword({ onDone }: { onDone: () => void }) {
     <div className="flex min-h-screen items-center justify-center bg-hero px-4">
       <form className="w-full max-w-sm space-y-4 rounded-2xl bg-card p-8 shadow-xl" onSubmit={async (e) => {
         e.preventDefault();
-        if (pw.length < 8) return toast.error("Use at least 8 characters");
+        if (pw.length < 8) { toast.error("Use at least 8 characters"); return; }
         const { error } = await supabase.auth.updateUser({ password: pw });
         if (error) toast.error(error.message); else { toast.success("Password updated"); onDone(); }
       }}>
