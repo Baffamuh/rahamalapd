@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { Building2, Home, Inbox, LogOut, Map, Menu, Users } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -38,7 +38,7 @@ function Login({ notStaff }: { notStaff?: string }) {
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
-  async function submit(e: React.FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     if (mode === "in") { const err = await signIn(email, pw); if (err) toast.error(err); }
@@ -116,7 +116,7 @@ function AdminLayout() {
       <aside className="no-print sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
         <Link to="/" className="flex items-center gap-3 p-5"><Emblem framed className="h-10 w-10" /><div className="leading-tight"><div className="font-display font-bold">Rahama Admin</div><div className="text-[11px] opacity-70">Back office</div></div></Link>
         <NavLinks />
-        <button onClick={signOut} className="m-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm opacity-80 hover:bg-sidebar-accent"><LogOut className="h-4 w-4" /> Sign out</button>
+        <button onClick={() => signOut()} className="m-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm opacity-80 hover:bg-sidebar-accent"><LogOut className="h-4 w-4" /> Sign out</button>
       </aside>
       <div className="min-w-0 flex-1">
         <header className="no-print sticky top-0 z-30 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b bg-sidebar px-3 py-2 text-sidebar-foreground lg:hidden">
@@ -125,13 +125,13 @@ function AdminLayout() {
             <SheetContent side="left" className="flex w-72 flex-col bg-sidebar p-0 text-sidebar-foreground">
               <SheetTitle className="flex items-center gap-3 p-5 text-sidebar-foreground"><Emblem framed className="h-10 w-10" /><span className="font-display font-bold">Rahama Admin</span></SheetTitle>
               <NavLinks onNavigate={() => setOpen(false)} />
-              <button onClick={signOut} className="m-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm opacity-80 hover:bg-sidebar-accent"><LogOut className="h-4 w-4" /> Sign out</button>
+              <button onClick={() => signOut()} className="m-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm opacity-80 hover:bg-sidebar-accent"><LogOut className="h-4 w-4" /> Sign out</button>
             </SheetContent>
           </Sheet>
           <div className="flex min-w-0 items-center gap-2"><Emblem framed className="h-8 w-8" /><span className="truncate font-display font-semibold">{current}</span></div>
-          <Button size="icon" variant="ghost" className="hover:bg-sidebar-accent" onClick={signOut} aria-label="Sign out"><LogOut className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" className="hover:bg-sidebar-accent" onClick={() => signOut()} aria-label="Sign out"><LogOut className="h-4 w-4" /></Button>
         </header>
-        <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8"><Outlet /></div>
+        <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8"><DbScope.Provider value={{ admin: true }}><Suspense fallback={<div className="py-16 text-center text-sm text-muted-foreground">Loading…</div>}><Outlet /></Suspense></DbScope.Provider></div>
       </div>
     </div>
   );
