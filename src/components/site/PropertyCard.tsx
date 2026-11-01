@@ -25,6 +25,7 @@ export function PropertyCard({ p }: { p: Property }) {
     <Link to="/properties/$slug" params={{ slug: p.slug }} className="group overflow-hidden rounded-xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img src={p.images[0]} alt={p.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
+        <img src="/rahama-emblem.png" alt="" aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 w-[22%] max-w-[120px] opacity-80 drop-shadow" />
         <StatusBadge status={p.status} className="absolute left-3 top-3" />
         <Badge variant="secondary" className="absolute right-3 top-3">{p.transaction === "rent" ? "For Rent" : "For Sale"}</Badge>
       </div>
