@@ -65,7 +65,7 @@ function PropertyPage() {
         <div className="mt-4 grid gap-8 lg:grid-cols-[1fr_380px]">
           <div className="space-y-6">
             <div>
-              <div className="aspect-[16/10] overflow-hidden rounded-xl bg-muted"><img src={p.images[img]} alt={p.title} className="h-full w-full object-cover" /></div>
+              <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-muted"><img src={p.images[img]} alt={p.title} className="h-full w-full object-cover" /><img src="/rahama-emblem.png" alt="" aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 w-[22%] max-w-[120px] opacity-80 drop-shadow" /></div>
               {p.images.length > 1 && (
                 <div className="mt-2 flex gap-2 overflow-x-auto">
                   {p.images.map((src, i) => (
