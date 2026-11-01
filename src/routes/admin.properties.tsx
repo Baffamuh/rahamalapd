@@ -12,8 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { BoundaryDrawer } from "@/components/map/BoundaryDrawer";
 import { formatNaira } from "@/lib/company";
 import { watermarkPhoto } from "@/lib/watermark";
-import { nextRef, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
-import { CATEGORIES, STATUSES, TITLE_DOCS, type Property, type PropertyStatus } from "@/lib/types";
+import { nextRef, typeCode, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
+import { CATEGORIES, STATUSES, TITLE_DOCS, conditionsFor, type HouseCondition, type Property, type PropertyStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/properties")({ component: AdminProperties });
 
@@ -132,10 +132,11 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
 
   const save = () => {
     if (!f.title.trim() || !f.zoneId || !f.subZoneId || f.price <= 0) { toast.error("Title, zone, sub-zone and price are required."); return; }
+    if (f.ref.trim() && db.properties.some((p) => p.id !== f.id && p.ref.toUpperCase() === f.ref.trim().toUpperCase())) { toast.error("That reference code is already used by another listing."); return; }
     const ok = updateDb((d) => {
       const z = d.zones.find((x) => x.id === f.zoneId)!;
-      if (f.id) return { ...d, properties: d.properties.map((p) => (p.id === f.id ? f : p)) };
-      const ref = nextRef(d, z.code);
+      if (f.id) return { ...d, properties: d.properties.map((p) => (p.id === f.id ? { ...f, ref: f.ref.trim().toUpperCase() || p.ref } : p)) };
+      const ref = f.ref.trim() ? f.ref.trim().toUpperCase() : nextRef(d, z.code, f.transaction, f.category, f.condition);
       const slug = f.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + ref.slice(-3).toLowerCase() + z.code.toLowerCase();
       return { ...d, properties: [{ ...f, id: uid(), ref, slug, createdAt: new Date().toISOString().slice(0, 10), images: f.images.length ? f.images : ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=70"] }, ...d.properties] };
     }, `${f.id ? "Listing updated" : "Listing created"}: ${f.title}`);
@@ -158,16 +159,18 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
       <div className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
         <h3 className="font-semibold sm:col-span-2">1. Listing details</h3>
         <div className="sm:col-span-2"><Label>Title</Label><Input value={f.title} onChange={(e) => set("title", e.target.value)} /></div>
-        <div><Label>Transaction</Label><select className={sel} value={f.transaction} onChange={(e) => set("transaction", e.target.value as "sale" | "rent")}><option value="sale">For Sale</option><option value="rent">For Rent</option></select></div>
+        <div><Label>Transaction</Label><select className={sel} value={f.transaction} onChange={(e) => { const tx = e.target.value as "sale" | "rent"; setF((p) => ({ ...p, transaction: tx, condition: p.condition && !conditionsFor(tx).includes(p.condition) ? "Completed" : p.condition })); }}><option value="sale">For Sale</option><option value="rent">For Rent</option></select></div>
         <div><Label>Category</Label><select className={sel} value={f.category} onChange={(e) => set("category", e.target.value as Property["category"])}>{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></div>
         <div><Label>Zone</Label><select className={sel} value={f.zoneId} onChange={(e) => setF((p) => ({ ...p, zoneId: e.target.value, subZoneId: "", areaId: "" }))}><option value="">Select zone…</option>{db.zones.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}</select></div>
         <div><Label>Sub-zone</Label><select className={sel} disabled={!zone} value={f.subZoneId} onChange={(e) => setF((p) => ({ ...p, subZoneId: e.target.value, areaId: "" }))}><option value="">Select sub-zone…</option>{zone?.subZones.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
         <div><Label>Layout area</Label><select className={sel} disabled={!sub} value={f.areaId} onChange={(e) => set("areaId", e.target.value)}><option value="">Select area…</option>{sub?.areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
         <div><Label>Status</Label><select className={sel} value={f.status} onChange={(e) => set("status", e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s} value={s}>{s === "Private" ? "Private (invite link only)" : s}</option>)}</select>{f.status === "Private" && <p className="mt-1 text-xs text-muted-foreground">Hidden from the website. After saving, use the link button on the listing to copy a private invite link.</p>}</div>
+        <div><Label>Reference code</Label><div className="flex gap-2"><Input placeholder={`Auto: ${zone ? nextRef(db, zone.code, f.transaction, f.category, f.condition) : "pick a zone"}`} value={f.ref} onChange={(e) => set("ref", e.target.value)} /><Button type="button" variant="outline" disabled={!zone} onClick={() => zone && set("ref", nextRef(db, zone.code, f.transaction, f.category, f.condition))}>Auto</Button></div><p className="mt-1 text-xs text-muted-foreground">Leave empty for automatic, or type your own code. Type code: {typeCode(f.transaction, f.category, f.condition)}</p></div>
         <div><Label>Price (₦)</Label><Input type="number" value={f.price || ""} onChange={(e) => set("price", Number(e.target.value))} /></div>
         <div><Label>Plots (50×100 ft)</Label><Input type="number" step="0.1" value={f.plots} onChange={(e) => set("plots", Number(e.target.value))} /></div>
         <div><Label>Dimensions</Label><Input value={f.dimensions} onChange={(e) => set("dimensions", e.target.value)} /></div>
         {f.category === "House/Villa" && <>
+          <div><Label>House condition</Label><select className={sel} value={f.condition ?? "Completed"} onChange={(e) => set("condition", e.target.value as HouseCondition)}>{conditionsFor(f.transaction).map((c) => <option key={c}>{c}</option>)}</select></div>
           <div><Label>Bedrooms</Label><Input type="number" value={f.bedrooms ?? ""} onChange={(e) => set("bedrooms", Number(e.target.value) || undefined)} /></div>
           <div><Label>Bathrooms</Label><Input type="number" value={f.bathrooms ?? ""} onChange={(e) => set("bathrooms", Number(e.target.value) || undefined)} /></div>
         </>}

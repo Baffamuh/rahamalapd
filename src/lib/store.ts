@@ -58,9 +58,15 @@ export function zoneLabel(d: DB, zoneId: string, subZoneId?: string) {
   return [s?.name, z?.name].filter(Boolean).join(", ");
 }
 
-export function nextRef(d: DB, code: "AZR" | "BAU") {
-  const nums = d.properties.filter((p) => p.ref.startsWith(`RHM-${code}-`)).map((p) => parseInt(p.ref.slice(-3)) || 0);
-  return `RHM-${code}-${String(Math.max(0, ...nums) + 1).padStart(3, "0")}`;
+/** Type code: S/R (sale/rent) + L, CL, F, SH, or H+C/S/I (house condition). Mirrors the database rule. */
+export function typeCode(tx: "sale" | "rent", category: string, condition?: string) {
+  const c = category === "Residential Land" ? "L" : category === "Commercial Land" ? "CL" : category === "Farm" ? "F" : category === "Shop" ? "SH" : category === "House/Villa" ? "H" + (condition === "Semi-completed" ? "S" : condition === "Incomplete" ? "I" : "C") : "X";
+  return (tx === "rent" ? "R" : "S") + c;
+}
+export function nextRef(d: DB, code: "AZR" | "BAU", tx?: "sale" | "rent", category?: string, condition?: string) {
+  const pfx = tx && category ? `RHM-${code}-${typeCode(tx, category, condition)}-` : `RHM-${code}-`;
+  const nums = d.properties.filter((p) => p.ref.startsWith(pfx)).map((p) => parseInt(p.ref.slice(-3)) || 0);
+  return `${pfx}${String(Math.max(0, ...nums) + 1).padStart(3, "0")}`;
 }
 
 export function nextReceipt(d: DB, year: number) {
