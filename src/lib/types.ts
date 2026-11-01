@@ -8,6 +8,8 @@ export type PropertyStatus = "Draft" | "Published" | "Private" | "Reserved" | "S
 export type Category = "Residential Land" | "Commercial Land" | "House/Villa" | "Farm" | "Shop";
 export const CATEGORIES: Category[] = ["Residential Land", "Commercial Land", "House/Villa", "Farm", "Shop"];
 export const STATUSES: PropertyStatus[] = ["Draft", "Published", "Private", "Reserved", "Sold", "Archived"];
+export type HouseCondition = "Completed" | "Semi-completed" | "Incomplete";
+export const conditionsFor = (tx: "sale" | "rent"): HouseCondition[] => (tx === "rent" ? ["Completed", "Semi-completed"] : ["Completed", "Semi-completed", "Incomplete"]);
 export const TITLE_DOCS = ["C-of-O", "R-of-O", "Survey Plan", "Deed of Assignment"] as const;
 
 export type Survey = { area?: number | undefined; number?: string | undefined; authority?: string | undefined; date?: string | undefined };
@@ -25,6 +27,7 @@ export type Property = {
   price: number;
   plots: number;
   dimensions: string;
+  condition?: HouseCondition | undefined;
   bedrooms?: number | undefined;
   bathrooms?: number | undefined;
   status: PropertyStatus;

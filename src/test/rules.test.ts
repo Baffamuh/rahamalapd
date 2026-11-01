@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { acceptWalkFix, areaBreakdown, edgeLengths, geodesicArea, isSelfIntersecting, M_TO_FT } from "@/lib/geo";
 import { formatNaira } from "@/lib/company";
 import { leaderboard, saleBalance } from "@/lib/leaderboard";
-import { nextReceipt, nextRef } from "@/lib/store";
+import { nextReceipt, nextRef, typeCode } from "@/lib/store";
 import { makeSeed } from "@/lib/seed";
 import { scoreLead } from "@/lib/leads";
 
@@ -43,4 +43,11 @@ describe("business rules", () => {
   });
   it("inspection with deposit intent scores High", () =>
     expect(scoreLead({ message: "Ready to pay deposit this week", phone: "08051234567", type: "inspection", propertyId: "p1" }).priority).toBe("High"));
+  it("sale and rent codes differ per category", () => {
+    expect(typeCode("sale", "House/Villa", "Incomplete")).toBe("SHI");
+    expect(typeCode("rent", "House/Villa", "Semi-completed")).toBe("RHS");
+    expect(typeCode("sale", "Shop")).toBe("SSH");
+    expect(typeCode("rent", "Farm")).toBe("RF");
+  });
+  it("auto ref includes type code", () => expect(nextRef(makeSeed(), "AZR", "rent", "Shop")).toBe("RHM-AZR-RSH-001"));
 });

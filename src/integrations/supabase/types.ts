@@ -181,6 +181,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      property_type_code: {
+        Args: { _cat: string; _cond: string; _tx: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin"
