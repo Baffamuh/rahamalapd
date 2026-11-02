@@ -1,13 +1,13 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
-import { Building2, Home, Inbox, LogOut, Map, Menu, Users } from "lucide-react";
+import { Building2, Home, Inbox, LogOut, Map, Menu, Users, Mail, LoaderCircle } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BrandLogo, Emblem } from "@/components/site/SiteLayout";
-import { ADMIN_EMAIL, resetPassword, signIn, signOut, signUp, useAuth } from "@/lib/auth";
+import { ADMIN_EMAIL, resetPassword, signIn, signOut, signUp, useAuth, verifySignupCode, resendSignupCode, signInWithGoogle } from "@/lib/auth";
 import { DbScope } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,6 +19,8 @@ export const Route = createFileRoute("/admin")({
       { name: "description", content: "Rahama Property back-office: listings, enquiries, agents and sales." },
       { property: "og:title", content: "Admin Portal | Rahama Property" },
       { property: "og:description", content: "Staff-only back office." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -34,32 +36,65 @@ const NAV = [
 ] as const;
 
 function Login({ notStaff }: { notStaff?: string | undefined }) {
-  const [mode, setMode] = useState<"in" | "up" | "reset">("in");
+  const [mode, setMode] = useState<"in" | "up" | "reset" | "verify">("in");
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
+  const [code, setCode] = useState("");
+  const [resendUntil, setResendUntil] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const tick = () => setSeconds(Math.max(0, Math.ceil((resendUntil - Date.now()) / 1000)));
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendUntil]);
+  async function google() {
+    setBusy(true);
+    try { const err = await signInWithGoogle(); if (err) toast.error(err); }
+    catch { toast.error("Google sign-in could not start. Please try again."); }
+    finally { setBusy(false); }
+  }
+  async function resend() {
+    if (busy || Date.now() < resendUntil) return;
+    setBusy(true);
+    try {
+      const err = await resendSignupCode(email);
+      if (err) toast.error(err);
+      else { setResendUntil(Date.now() + 60000); toast.success("Verification email sent. Check your inbox and spam folder."); }
+    } catch { toast.error("Could not resend verification. Please try again."); }
+    finally { setBusy(false); }
+  }
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
+    try {
     if (mode === "in") { const err = await signIn(email, pw); if (err) toast.error(err); }
     else if (mode === "up") {
       if (pw.length < 8) { toast.error("Use at least 8 characters"); setBusy(false); return; }
-      const err = await signUp(email, pw);
-      if (err) toast.error(err); else { toast.success("Account created. Check your email inbox and click the confirmation link, then sign in."); setMode("in"); }
+      const result = await signUp(email, pw);
+      if (result.error) toast.error(result.error);
+      else if (result.needsVerification) { setCode(""); setPw(""); setResendUntil(Date.now() + 60000); setMode("verify"); toast.success("Check your inbox for your verification email."); }
+    } else if (mode === "verify") {
+      const err = await verifySignupCode(email, code);
+      if (err) toast.error(err); else { toast.success("Email verified."); setMode("in"); setCode(""); }
     } else { const err = await resetPassword(email); if (err) toast.error(err); else toast.success("Password reset link sent to your email."); }
-    setBusy(false);
+    } catch { toast.error("Could not complete your request. Please try again."); }
+    finally { setBusy(false); }
   }
   return (
     <div className="flex min-h-screen items-center justify-center bg-hero px-4">
       <form className="w-full max-w-sm space-y-4 rounded-2xl bg-card p-8 shadow-xl" onSubmit={submit}>
-        <div className="flex flex-col items-center gap-2 text-center"><BrandLogo className="h-28" /><div className="text-xs uppercase tracking-widest text-muted-foreground">{mode === "up" ? "Create staff account" : mode === "reset" ? "Reset password" : "Staff sign-in"}</div></div>
+        <div className="flex flex-col items-center gap-2 text-center"><BrandLogo className="h-28" /><div className="text-xs uppercase tracking-widest text-muted-foreground">{mode === "up" ? "Create staff account" : mode === "verify" ? "Verify your email" : mode === "reset" ? "Reset password" : "Staff sign-in"}</div></div>
         {notStaff && <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive">{notStaff} is signed in but does not have staff access. <button type="button" className="underline" onClick={() => signOut()}>Sign out</button></div>}
-        <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-        {mode !== "reset" && <div><Label>Password</Label><Input type="password" required value={pw} onChange={(e) => setPw(e.target.value)} /></div>}
-        <Button type="submit" className="w-full" disabled={busy}>{mode === "up" ? "Create account" : mode === "reset" ? "Send reset link" : "Sign in"}</Button>
+        <div><Label htmlFor="staff-email">Email</Label><Input id="staff-email" autoComplete="email" type="email" required readOnly={mode === "verify"} value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+        {(mode === "in" || mode === "up") && <div><Label htmlFor="staff-password">Password</Label><Input id="staff-password" autoComplete={mode === "up" ? "new-password" : "current-password"} type="password" required value={pw} onChange={(e) => setPw(e.target.value)} /></div>}
+        {mode === "verify" && <div><Label htmlFor="verification-code">Verification code</Label><Input id="verification-code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,8}" minLength={6} maxLength={8} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} /><Button type="button" variant="link" className="mt-1 px-0 text-xs" disabled={busy || seconds > 0} onClick={resend}><Mail />{seconds > 0 ? `Resend in ${seconds}s` : "Resend code"}</Button></div>}
+        <Button type="submit" className="w-full" disabled={busy}>{busy && <LoaderCircle className="animate-spin motion-reduce:animate-none" />}{mode === "up" ? "Create account" : mode === "verify" ? "Verify email" : mode === "reset" ? "Send reset link" : "Sign in"}</Button>
+        {(mode === "in" || mode === "up") && <><div className="flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" /></div><Button type="button" variant="outline" className="w-full" disabled={busy} onClick={google}><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2.1H12v4h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.3 2.9-7.4ZM12 22c2.7 0 5-.9 6.7-2.4l-3.3-2.6c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.8-5.6-4.2H3v2.7A10 10 0 0 0 12 22ZM6.4 13.7a6 6 0 0 1 0-3.4V7.6H3a10 10 0 0 0 0 8.8l3.4-2.7ZM12 6.1c1.5 0 2.8.5 3.8 1.5l2.8-2.8A9.6 9.6 0 0 0 12 2a10 10 0 0 0-9 5.6l3.4 2.7C7.2 7.9 9.4 6.1 12 6.1Z" /></svg>Continue with Google</Button></>}
         <div className="flex justify-between text-xs">
-          {mode !== "in" ? <button type="button" className="text-primary hover:underline" onClick={() => setMode("in")}>Back to sign in</button> : <button type="button" className="text-primary hover:underline" onClick={() => setMode("up")}>First time? Create account</button>}
-          {mode === "in" && <button type="button" className="text-muted-foreground hover:underline" onClick={() => setMode("reset")}>Forgot password?</button>}
+          {mode !== "in" ? <Button type="button" variant="link" className="h-auto p-0 text-xs" disabled={busy} onClick={() => setMode("in")}>Back to sign in</Button> : <Button type="button" variant="link" className="h-auto p-0 text-xs" disabled={busy} onClick={() => setMode("up")}>First time? Create account</Button>}
+          {mode === "in" && <Button type="button" variant="link" className="h-auto p-0 text-xs text-muted-foreground" disabled={busy} onClick={() => setMode("reset")}>Forgot password?</Button>}
         </div>
         <Link to="/" className="block text-center text-xs text-muted-foreground hover:underline">← Back to website</Link>
       </form>

@@ -11,6 +11,6 @@
 
 ## Architecture
 - All app data (zones, listings, agents, sales, enquiries) lives in a browser-local store (`src/lib/store.ts`, localStorage) seeded from `src/lib/seed.ts`; why: the zero-cost, no-backend requirement. Moving to a real database means replacing this module.
-- Admin sign-in is a client-side single-tenant gate (`src/lib/auth.ts`); why: specified demo login — it is not real security.
+- Staff authentication uses Cloud Auth with database-controlled roles; Google uses the managed broker and signup codes use native verifyOtp/resend so no custom token storage is needed.
 - Maps use Leaflet + OpenStreetMap tiles, loaded only in the browser via `src/components/map/MapView.tsx`; why: Leaflet breaks during server rendering.
 - Business rules (area maths, refs/receipt numbers, leaderboard, lead scoring) are pure functions in `src/lib/*` covered by `src/test/rules.test.ts`.
