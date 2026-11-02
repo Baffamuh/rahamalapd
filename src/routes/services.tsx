@@ -10,6 +10,8 @@ export const Route = createFileRoute("/services")({
       { name: "description", content: "Land sales, property development, title documentation and site inspections in Azare and Bauchi." },
       { property: "og:title", content: "Our Services | Rahama Property" },
       { property: "og:description", content: "Land sales, building, C-of-O processing and guided site inspections." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (

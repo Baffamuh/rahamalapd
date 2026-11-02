@@ -10,6 +10,8 @@ export const Route = createFileRoute("/about")({
       { name: "description", content: "Our mission, leadership and CAC registration (RC NO. 9871926). Based on Old Kano Road, Azare." },
       { property: "og:title", content: "About Rahama Property" },
       { property: "og:description", content: "A registered Azare-based land and property company, RC NO. 9871926." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (

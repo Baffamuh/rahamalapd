@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 
 // Real cloud sign-in. Staff access is granted by the database (user_roles) for confirmed company emails.
 export const ADMIN_EMAIL = "rahmalapd@gmail.com";
@@ -32,8 +33,21 @@ export async function signIn(email: string, password: string) {
   return error?.message;
 }
 export async function signUp(email: string, password: string) {
-  const { error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${window.location.origin}/admin` } });
+  const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: window.location.origin } });
+  return { error: error?.message, needsVerification: !error && !data.session };
+}
+export async function verifySignupCode(email: string, token: string) {
+  const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: token.trim(), type: "signup" });
   return error?.message;
+}
+export async function resendSignupCode(email: string) {
+  const { error } = await supabase.auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: window.location.origin } });
+  return error?.message;
+}
+export async function signInWithGoogle() {
+  // /admin is the public sign-in screen, not a beforeLoad-protected callback.
+  const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/admin` });
+  return result.error?.message;
 }
 export async function resetPassword(email: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/admin` });
