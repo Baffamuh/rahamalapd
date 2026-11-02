@@ -12,6 +12,15 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  // On Vercel builds (VERCEL env is set), output Vercel serverless functions.
-  ...(process.env["VERCEL"] ? { nitro: { preset: "vercel" } } : {}),
+  // On Vercel builds (VERCEL env is set), output Vercel functions and send Google sign-in
+  // (/~oauth/*) to the Lovable-hosted sign-in service, which Vercel does not have.
+  ...(process.env["VERCEL"]
+    ? {
+        nitro: {
+          preset: "vercel",
+          // routeRules is a valid Nitro option missing from this config type.
+          ...({ routeRules: { "/~oauth/**": { redirect: { to: "https://rahamalapd.lovable.app/~oauth/**", statusCode: 302 } } } } as object),
+        },
+      }
+    : {}),
 });

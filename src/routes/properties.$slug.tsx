@@ -76,7 +76,7 @@ function PropertyPage() {
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center gap-2"><StatusBadge status={p.status} /><Badge variant="outline">{p.ref}</Badge><Badge variant="secondary">{p.category}</Badge><Badge variant="secondary">{p.transaction === "rent" ? "For Rent" : "For Sale"}</Badge></div>
+              <div className="flex flex-wrap items-center gap-2"><StatusBadge status={p.status} /><Badge variant="outline">{p.ref}</Badge><Badge variant="secondary">{p.category}</Badge>{p.condition && <Badge variant="secondary">{p.condition}</Badge>}<Badge variant="secondary">{p.transaction === "rent" ? "For Rent" : "For Sale"}</Badge></div>
               <h1 className="mt-3 text-3xl font-bold">{p.title}</h1>
               <p className="mt-1 flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{[area, loc].filter(Boolean).join(", ")}</p>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
