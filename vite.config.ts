@@ -18,7 +18,8 @@ export default defineConfig({
     ? {
         nitro: {
           preset: "vercel",
-          routeRules: { "/~oauth/**": { redirect: { to: "https://rahamalapd.lovable.app/~oauth/**", statusCode: 302 } } },
+          // routeRules is a valid Nitro option missing from this config type.
+          ...({ routeRules: { "/~oauth/**": { redirect: { to: "https://rahamalapd.lovable.app/~oauth/**", statusCode: 302 } } } } as object),
         },
       }
     : {}),
