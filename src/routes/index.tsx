@@ -17,6 +17,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Buy verified plots, houses, farms and shops in Azare and Bauchi with C-of-O documentation, site inspections and installment plans." },
       { property: "og:title", content: "Rahama Property Hub — Verified Land & Homes in Azare" },
       { property: "og:description", content: "Verified plots, houses and commercial property across Azare and Bauchi State." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomePage,

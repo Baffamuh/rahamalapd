@@ -5,7 +5,7 @@
 - [ ] Verify public flows and staff flows; report any account-confirmation blocker.
 
 ## Sign-in update
-- [ ] Add Google sign-in without changing approved staff access.
-- [ ] Add signup email-code verification and resend.
-- [ ] Configure verification emails to show codes instead of links.
-- [ ] Test sign-in controls and verification behavior.
+- [x] Add Google sign-in without changing approved staff access.
+- [x] Add signup email-code verification and resend.
+- [ ] Configure verification emails to show codes instead of links — blocked until the user sets up an owned sending domain.
+- [x] Test sign-in controls and verification behavior (automated tests and simulated browser flow); real Google authorization and mailbox delivery remain unverified.

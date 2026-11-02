@@ -13,6 +13,8 @@ export const Route = createFileRoute("/contact")({
       { name: "description", content: "Visit us at No. 12, Old Kano Road, Azare, call 08063784070 or chat on WhatsApp." },
       { property: "og:title", content: "Contact Rahama Property" },
       { property: "og:description", content: "Office address, phone numbers, email and enquiry form." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (
