@@ -44,10 +44,21 @@ describe("business rules", () => {
   it("inspection with deposit intent scores High", () =>
     expect(scoreLead({ message: "Ready to pay deposit this week", phone: "08051234567", type: "inspection", propertyId: "p1" }).priority).toBe("High"));
   it("sale and rent codes differ per category", () => {
-    expect(typeCode("sale", "House/Villa", "Incomplete")).toBe("SHI");
-    expect(typeCode("rent", "House/Villa", "Semi-completed")).toBe("RHS");
+    expect(typeCode("sale", "House/Villa", "Incomplete")).toBe("SHUN");
+    expect(typeCode("rent", "House/Villa", "Semi-completed")).toBe("RHSM");
     expect(typeCode("sale", "Shop")).toBe("SSH");
     expect(typeCode("rent", "Farm")).toBe("RF");
+  });
+  it("the three house conditions each have their own code", () => {
+    const sale = ["Completed", "Semi-completed", "Incomplete"].map((c) => typeCode("sale", "House/Villa", c));
+    const rent = ["Completed", "Semi-completed", "Incomplete"].map((c) => typeCode("rent", "House/Villa", c));
+    expect(sale).toEqual(["SHFC", "SHSM", "SHUN"]);
+    expect(rent).toEqual(["RHFC", "RHSM", "RHUN"]);
+    expect(new Set([...sale, ...rent]).size).toBe(6);
+  });
+  it("house codes differ from land, farm and shop codes", () => {
+    expect(typeCode("sale", "House/Villa", "Completed")).not.toBe(typeCode("sale", "Shop"));
+    expect(typeCode("sale", "House/Villa", "Completed")).not.toBe(typeCode("sale", "Residential Land"));
   });
   it("auto ref includes type code", () => expect(nextRef(makeSeed(), "AZR", "rent", "Shop")).toBe("RHM-AZR-RSH-001"));
 });
