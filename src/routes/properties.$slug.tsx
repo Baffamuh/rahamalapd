@@ -56,7 +56,8 @@ function PropertyPage() {
   if (!p || p.status === "Draft" || p.status === "Archived" || privateBlocked) {
     return <SiteLayout><div className="mx-auto max-w-xl px-4 py-24 text-center"><h1 className="text-2xl font-bold">Listing not available</h1><p className="mt-2 text-muted-foreground">This property may have been removed.</p><Button asChild className="mt-6"><Link to="/properties">Browse properties</Link></Button></div></SiteLayout>;
   }
-  const wa = waLink(propertyWaMessage(p.title, p.ref));
+  const wa = p.contactPhone ? waLink(propertyWaMessage(p.title, p.ref), toWhatsApp(p.contactPhone)) : waLink(propertyWaMessage(p.title, p.ref));
+  const callNo = p.contactPhone || COMPANY.phonesLocal[0];
 
   return (
     <SiteLayout>

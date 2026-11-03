@@ -10,6 +10,9 @@ export const CATEGORIES: Category[] = ["Residential Land", "Commercial Land", "H
 export const STATUSES: PropertyStatus[] = ["Draft", "Published", "Private", "Reserved", "Sold", "Archived"];
 export type HouseCondition = "Completed" | "Semi-completed" | "Incomplete";
 export const conditionsFor = (tx: "sale" | "rent"): HouseCondition[] => (tx === "rent" ? ["Completed", "Semi-completed"] : ["Completed", "Semi-completed", "Incomplete"]);
+export const conditionLabel = (c?: HouseCondition) => (c === "Incomplete" ? "Uncompleted" : c ?? "");
+/** Turns a local Nigerian number (0806…) into WhatsApp format (234806…). */
+export const toWhatsApp = (phone: string) => { const d = phone.replace(/\D/g, ""); return d.startsWith("0") ? "234" + d.slice(1) : d; };
 export const TITLE_DOCS = ["C-of-O", "R-of-O", "Survey Plan", "Deed of Assignment"] as const;
 
 export type Survey = { area?: number | undefined; number?: string | undefined; authority?: string | undefined; date?: string | undefined };
@@ -30,6 +33,12 @@ export type Property = {
   condition?: HouseCondition | undefined;
   bedrooms?: number | undefined;
   bathrooms?: number | undefined;
+  /** Plot / house / unit number, e.g. "Plot 24", "House 5B". */
+  unitNumber?: string | undefined;
+  /** How many units/plots of this listing are available. */
+  availableUnits?: number | undefined;
+  /** Optional direct contact phone for this listing. */
+  contactPhone?: string | undefined;
   status: PropertyStatus;
   featured: boolean;
   images: string[];

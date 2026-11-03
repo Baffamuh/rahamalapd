@@ -30,7 +30,7 @@ export function PropertyCard({ p }: { p: Property }) {
         <Badge variant="secondary" className="absolute right-3 top-3">{p.transaction === "rent" ? "For Rent" : "For Sale"}</Badge>
       </div>
       <div className="space-y-2 p-4">
-        <div className="text-xs font-medium text-muted-foreground">{p.ref} · {p.category}{p.condition ? ` · ${p.condition}` : ""}</div>
+        <div className="text-xs font-medium text-muted-foreground">{p.ref} · {p.category}{p.condition ? ` · ${p.condition === "Incomplete" ? "Uncompleted" : p.condition}` : ""}{p.unitNumber ? ` · ${p.unitNumber}` : ""}{(p.availableUnits ?? 1) > 1 ? ` · ${p.availableUnits} available` : ""}</div>
         <h3 className="line-clamp-1 font-display font-semibold">{p.title}</h3>
         <p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{loc}</p>
         <div className="flex items-center justify-between pt-1">

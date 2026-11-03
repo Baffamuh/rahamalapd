@@ -13,7 +13,7 @@ import { BoundaryDrawer } from "@/components/map/BoundaryDrawer";
 import { formatNaira } from "@/lib/company";
 import { watermarkPhoto } from "@/lib/watermark";
 import { nextRef, typeCode, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
-import { CATEGORIES, STATUSES, TITLE_DOCS, conditionsFor, type HouseCondition, type Property, type PropertyStatus } from "@/lib/types";
+import { CATEGORIES, STATUSES, TITLE_DOCS, conditionLabel, conditionsFor, type HouseCondition, type Property, type PropertyStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/properties")({ component: AdminProperties });
 
