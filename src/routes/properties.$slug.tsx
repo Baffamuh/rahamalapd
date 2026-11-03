@@ -13,7 +13,7 @@ import { AreaSummary, CadastralDisclaimer } from "@/components/map/AreaSummary";
 import { COMPANY, formatNaira, propertyWaMessage, waLink } from "@/lib/company";
 import { useDb, useDbAll, zoneLabel } from "@/lib/store";
 import { publicDbOptions } from "@/lib/cloud-query";
-import { TITLE_DOCS, type Property } from "@/lib/types";
+import { TITLE_DOCS, conditionLabel, toWhatsApp, type Property } from "@/lib/types";
 
 export const Route = createFileRoute("/properties/$slug")({
   validateSearch: (s: Record<string, unknown>): { invite?: string } => (typeof s['invite'] === "string" ? { invite: s['invite'] } : {}),
@@ -56,7 +56,8 @@ function PropertyPage() {
   if (!p || p.status === "Draft" || p.status === "Archived" || privateBlocked) {
     return <SiteLayout><div className="mx-auto max-w-xl px-4 py-24 text-center"><h1 className="text-2xl font-bold">Listing not available</h1><p className="mt-2 text-muted-foreground">This property may have been removed.</p><Button asChild className="mt-6"><Link to="/properties">Browse properties</Link></Button></div></SiteLayout>;
   }
-  const wa = waLink(propertyWaMessage(p.title, p.ref));
+  const wa = p.contactPhone ? waLink(propertyWaMessage(p.title, p.ref), toWhatsApp(p.contactPhone)) : waLink(propertyWaMessage(p.title, p.ref));
+  const callNo = p.contactPhone || COMPANY.phonesLocal[0];
 
   return (
     <SiteLayout>
@@ -76,7 +77,7 @@ function PropertyPage() {
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center gap-2"><StatusBadge status={p.status} /><Badge variant="outline">{p.ref}</Badge><Badge variant="secondary">{p.category}</Badge>{p.condition && <Badge variant="secondary">{p.condition}</Badge>}<Badge variant="secondary">{p.transaction === "rent" ? "For Rent" : "For Sale"}</Badge></div>
+              <div className="flex flex-wrap items-center gap-2"><StatusBadge status={p.status} /><Badge variant="outline">{p.ref}</Badge><Badge variant="secondary">{p.category}</Badge>{p.condition && <Badge variant="secondary">{conditionLabel(p.condition)}</Badge>}{p.unitNumber && <Badge variant="outline">{p.unitNumber}</Badge>}{(p.availableUnits ?? 1) > 1 && <Badge variant="secondary">{p.availableUnits} available</Badge>}<Badge variant="secondary">{p.transaction === "rent" ? "For Rent" : "For Sale"}</Badge></div>
               <h1 className="mt-3 text-3xl font-bold">{p.title}</h1>
               <p className="mt-1 flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{[area, loc].filter(Boolean).join(", ")}</p>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -131,7 +132,7 @@ function PropertyPage() {
                     <DialogTrigger asChild><Button size="lg" variant="outline"><CalendarCheck className="mr-1 h-4 w-4" /> Book Site Inspection</Button></DialogTrigger>
                     <DialogContent><DialogHeader><DialogTitle>Book a site inspection</DialogTitle></DialogHeader><p className="text-sm text-muted-foreground">{p.title} · {p.ref}</p><EnquiryForm propertyId={p.id} type="inspection" defaultMessage={`I would like to inspect ${p.title} (Ref: ${p.ref}).`} onDone={() => setOpen(false)} /></DialogContent>
                   </Dialog>
-                  <Button asChild variant="ghost"><a href={`tel:${COMPANY.phonesLocal[0]}`}><Phone className="mr-1 h-4 w-4" /> {COMPANY.phones[0]}</a></Button>
+                  <Button asChild variant="ghost"><a href={`tel:${callNo}`}><Phone className="mr-1 h-4 w-4" /> {p.contactPhone || COMPANY.phones[0]}</a></Button>
                 </div>
               </div>
               {p.transaction === "sale" && p.status !== "Sold" && <InstallmentCalculator price={p.price} />}

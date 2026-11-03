@@ -13,7 +13,7 @@ import { BoundaryDrawer } from "@/components/map/BoundaryDrawer";
 import { formatNaira } from "@/lib/company";
 import { watermarkPhoto } from "@/lib/watermark";
 import { nextRef, typeCode, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
-import { CATEGORIES, STATUSES, TITLE_DOCS, conditionsFor, type HouseCondition, type Property, type PropertyStatus } from "@/lib/types";
+import { CATEGORIES, STATUSES, TITLE_DOCS, conditionLabel, conditionsFor, type HouseCondition, type Property, type PropertyStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/properties")({ component: AdminProperties });
 
@@ -166,11 +166,14 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
         <div><Label>Layout area</Label><select className={sel} disabled={!sub} value={f.areaId} onChange={(e) => set("areaId", e.target.value)}><option value="">Select area…</option>{sub?.areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
         <div><Label>Status</Label><select className={sel} value={f.status} onChange={(e) => set("status", e.target.value as PropertyStatus)}>{STATUSES.map((s) => <option key={s} value={s}>{s === "Private" ? "Private (invite link only)" : s}</option>)}</select>{f.status === "Private" && <p className="mt-1 text-xs text-muted-foreground">Hidden from the website. After saving, use the link button on the listing to copy a private invite link.</p>}</div>
         <div><Label>Reference code</Label><div className="flex gap-2"><Input placeholder={`Auto: ${zone ? nextRef(db, zone.code, f.transaction, f.category, f.condition) : "pick a zone"}`} value={f.ref} onChange={(e) => set("ref", e.target.value)} /><Button type="button" variant="outline" disabled={!zone} onClick={() => zone && set("ref", nextRef(db, zone.code, f.transaction, f.category, f.condition))}>Auto</Button></div><p className="mt-1 text-xs text-muted-foreground">Leave empty for automatic, or type your own code. Type code: {typeCode(f.transaction, f.category, f.condition)}</p></div>
+        <div><Label>Plot / House / Unit No.</Label><Input placeholder="e.g. Plot 24, House 5B, Shop 12" value={f.unitNumber ?? ""} onChange={(e) => set("unitNumber", e.target.value || undefined)} /></div>
+        <div><Label>Units / plots available</Label><Input type="number" min={0} value={f.availableUnits ?? 1} onChange={(e) => set("availableUnits", e.target.value === "" ? undefined : Math.max(0, Math.floor(Number(e.target.value))))} /></div>
+        <div className="sm:col-span-2"><Label>Direct contact phone (optional)</Label><Input type="tel" placeholder="Leave empty to use company lines" value={f.contactPhone ?? ""} onChange={(e) => set("contactPhone", e.target.value || undefined)} /></div>
         <div><Label>Price (₦)</Label><Input type="number" value={f.price || ""} onChange={(e) => set("price", Number(e.target.value))} /></div>
         <div><Label>Plots (50×100 ft)</Label><Input type="number" step="0.1" value={f.plots} onChange={(e) => set("plots", Number(e.target.value))} /></div>
         <div><Label>Dimensions</Label><Input value={f.dimensions} onChange={(e) => set("dimensions", e.target.value)} /></div>
         {f.category === "House/Villa" && <>
-          <div><Label>House condition</Label><select className={sel} value={f.condition ?? "Completed"} onChange={(e) => set("condition", e.target.value as HouseCondition)}>{conditionsFor(f.transaction).map((c) => <option key={c}>{c}</option>)}</select></div>
+          <div><Label>House condition</Label><select className={sel} value={f.condition ?? "Completed"} onChange={(e) => set("condition", e.target.value as HouseCondition)}>{conditionsFor(f.transaction).map((c) => <option key={c} value={c}>{conditionLabel(c)}</option>)}</select></div>
           <div><Label>Bedrooms</Label><Input type="number" value={f.bedrooms ?? ""} onChange={(e) => set("bedrooms", Number(e.target.value) || undefined)} /></div>
           <div><Label>Bathrooms</Label><Input type="number" value={f.bathrooms ?? ""} onChange={(e) => set("bathrooms", Number(e.target.value) || undefined)} /></div>
         </>}

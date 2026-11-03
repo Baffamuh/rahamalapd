@@ -56,7 +56,7 @@ function ReceiptPage() {
         <section className="mt-6">
           <h3 className="mb-2 text-xs font-bold uppercase text-muted-foreground">Property particulars</h3>
           <table className="w-full border text-sm"><tbody>
-            {[["Reference code", p?.ref], ["Title", p?.title], ["Zone / Sub-zone", p ? zoneLabel(db, p.zoneId, p.subZoneId) : ""], ["Plot dimensions", p ? `${p.dimensions} (${p.plots} plot${p.plots === 1 ? "" : "s"})` : ""], ["Survey reference", p?.survey.number || "—"]].map(([k, v]) => (
+            {[["Reference code", p?.ref], ["Plot / House / Unit No.", p?.unitNumber || "—"], ["Title", p?.title], ["Zone / Sub-zone", p ? zoneLabel(db, p.zoneId, p.subZoneId) : ""], ["Plot dimensions", p ? `${p.dimensions} (${p.plots} plot${p.plots === 1 ? "" : "s"})` : ""], ["Survey reference", p?.survey.number || "—"]].map(([k, v]) => (
               <tr key={k} className="border-b"><td className="w-1/3 bg-muted p-2 font-medium">{k}</td><td className="p-2">{v}</td></tr>
             ))}
           </tbody></table>

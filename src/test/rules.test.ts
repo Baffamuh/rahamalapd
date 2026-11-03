@@ -51,3 +51,9 @@ describe("business rules", () => {
   });
   it("auto ref includes type code", () => expect(nextRef(makeSeed(), "AZR", "rent", "Shop")).toBe("RHM-AZR-RSH-001"));
 });
+import { conditionLabel, conditionsFor, toWhatsApp } from "@/lib/types";
+describe("property numbers & conditions", () => {
+  it("rent houses only allow completed and semi-completed", () => expect(conditionsFor("rent")).toEqual(["Completed", "Semi-completed"]));
+  it("sale houses show Uncompleted", () => expect(conditionLabel(conditionsFor("sale")[2])).toBe("Uncompleted"));
+  it("local phone converts to WhatsApp format", () => expect(toWhatsApp("0806 378 4070")).toBe("2348063784070"));
+});
