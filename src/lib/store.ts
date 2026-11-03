@@ -58,9 +58,10 @@ export function zoneLabel(d: DB, zoneId: string, subZoneId?: string) {
   return [s?.name, z?.name].filter(Boolean).join(", ");
 }
 
-/** Type code: S/R (sale/rent) + L, CL, F, SH, or H+C/S/I (house condition). Mirrors the database rule. */
+/** Type code: S/R (sale/rent) + L, CL, F, SH, or HFC/HSM/HUN (house: completed / semi-completed / uncompleted). Mirrors the database rule. */
 export function typeCode(tx: "sale" | "rent", category: string, condition?: string) {
-  const c = category === "Residential Land" ? "L" : category === "Commercial Land" ? "CL" : category === "Farm" ? "F" : category === "Shop" ? "SH" : category === "House/Villa" ? "H" + (condition === "Semi-completed" ? "S" : condition === "Incomplete" ? "I" : "C") : "X";
+  const house = condition === "Semi-completed" ? "HSM" : condition === "Incomplete" ? "HUN" : "HFC";
+  const c = category === "Residential Land" ? "L" : category === "Commercial Land" ? "CL" : category === "Farm" ? "F" : category === "Shop" ? "SH" : category === "House/Villa" ? house : "X";
   return (tx === "rent" ? "R" : "S") + c;
 }
 export function nextRef(d: DB, code: "AZR" | "BAU", tx?: "sale" | "rent", category?: string, condition?: string) {

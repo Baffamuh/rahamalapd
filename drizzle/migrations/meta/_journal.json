@@ -29,6 +29,13 @@
       "when": 1793692996437,
       "tag": "0003_restrict_admin_emails",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793695176100,
+      "tag": "0004_house_condition_type_codes",
+      "breakpoints": true
     }
   ]
 }
