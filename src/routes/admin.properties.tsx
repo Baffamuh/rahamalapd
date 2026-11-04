@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { BoundaryDrawer } from "@/components/map/BoundaryDrawer";
 import { formatNaira } from "@/lib/company";
 import { watermarkPhoto } from "@/lib/watermark";
-import { nextRef, typeCode, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
+import { nextRef, totalAvailableUnits, typeCode, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
 import { CATEGORIES, STATUSES, TITLE_DOCS, conditionLabel, conditionsFor, type HouseCondition, type Property, type PropertyStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/properties")({ component: AdminProperties });
@@ -29,7 +29,8 @@ function AdminProperties() {
   const [statusF, setStatusF] = useState<PropertyStatus | "All">("All");
   const [edit, setEdit] = useState<Property | null>(null);
   const [selling, setSelling] = useState<Property | null>(null);
-  const list = db.properties.filter((p) => (statusF === "All" || p.status === statusF) && `${p.title} ${p.ref}`.toLowerCase().includes(q.toLowerCase())).sort((a, b) => db.zones.findIndex((z) => z.id === a.zoneId) - db.zones.findIndex((z) => z.id === b.zoneId));
+  const [zoneF, setZoneF] = useState("All");
+  const list = db.properties.filter((p) => (statusF === "All" || p.status === statusF) && (zoneF === "All" || p.zoneId === zoneF) && `${p.title} ${p.ref}`.toLowerCase().includes(q.toLowerCase())).sort((a, b) => db.zones.findIndex((z) => z.id === a.zoneId) - db.zones.findIndex((z) => z.id === b.zoneId));
   const setStatus = (id: string, status: PropertyStatus) => updateDb((d) => ({ ...d, properties: d.properties.map((p) => (p.id === id ? { ...p, status } : p)) }), `Status → ${status}`);
   const del = (p: Property) => confirm(`Delete ${p.title}?`) && updateDb((d) => ({ ...d, properties: d.properties.filter((x) => x.id !== p.id) }), `Listing deleted: ${p.title}`);
   const copyInvite = async (p: Property) => {
@@ -50,12 +51,16 @@ function AdminProperties() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-        <div className="min-w-0"><h1 className="truncate text-2xl font-bold sm:text-3xl">Properties</h1><p className="text-sm text-muted-foreground">{list.length} of {db.properties.length} listings</p></div>
+        <div className="min-w-0"><h1 className="truncate text-2xl font-bold sm:text-3xl">Properties</h1><p className="text-sm text-muted-foreground">{list.length} of {db.properties.length} listings · {totalAvailableUnits(list)} units available</p></div>
         <Button onClick={() => setEdit(blank())}><Plus className="mr-1 h-4 w-4" /> <span className="hidden sm:inline">New listing</span><span className="sm:hidden">New</span></Button>
       </div>
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_200px]">
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_180px_180px]">
         <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search title or reference…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" /></div>
         <select aria-label="Filter status" className={sel} value={statusF} onChange={(e) => setStatusF(e.target.value as PropertyStatus | "All")}><option value="All">All statuses</option>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select>
+        <select aria-label="Filter zone" className={sel} value={zoneF} onChange={(e) => setZoneF(e.target.value)}><option value="All">All zones</option>{db.zones.map((z, i) => <option key={z.id} value={z.id}>Z{i + 1} · {z.name}</option>)}</select>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {db.zones.map((z, i) => { const zl = list.filter((p) => p.zoneId === z.id); return zl.length ? <button key={z.id} onClick={() => setZoneF(zoneF === z.id ? "All" : z.id)} className={`rounded-full border px-3 py-1 text-xs ${zoneF === z.id ? "border-primary bg-primary text-primary-foreground" : "bg-card"}`}><b>Z{i + 1}</b> {z.name} · {zl.length} listing{zl.length === 1 ? "" : "s"} · {totalAvailableUnits(zl)} avail.</button> : null; })}
       </div>
 
       {list.length === 0 && <div className="rounded-xl border bg-card p-10 text-center text-sm text-muted-foreground">No listings match your search.</div>}

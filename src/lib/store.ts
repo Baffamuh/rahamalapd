@@ -86,3 +86,13 @@ export function nextAgentCode(d: DB) {
   const nums = d.agents.map((a) => parseInt(a.code.slice(-3)) || 0);
   return `RHM-AGT-${String(Math.max(0, ...nums) + 1).padStart(3, "0")}`;
 }
+
+/** Units still on offer for a listing: its available count (default 1) while Published, otherwise 0. */
+export function availableUnitsOf(p: { status: string; availableUnits?: number | undefined }) {
+  return p.status === "Published" ? Math.max(0, p.availableUnits ?? 1) : 0;
+}
+
+/** Sum of available units across listings. */
+export function totalAvailableUnits(list: { status: string; availableUnits?: number | undefined }[]) {
+  return list.reduce((n, p) => n + availableUnitsOf(p), 0);
+}
