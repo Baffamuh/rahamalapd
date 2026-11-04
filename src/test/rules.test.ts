@@ -68,3 +68,12 @@ describe("property numbers & conditions", () => {
   it("sale houses show Uncompleted", () => expect(conditionLabel(conditionsFor("sale")[2])).toBe("Uncompleted"));
   it("local phone converts to WhatsApp format", () => expect(toWhatsApp("0806 378 4070")).toBe("2348063784070"));
 });
+
+import { availableUnitsOf, totalAvailableUnits } from "@/lib/store";
+describe("available units", () => {
+  it("counts only published listings, default 1", () => {
+    expect(availableUnitsOf({ status: "Published" })).toBe(1);
+    expect(availableUnitsOf({ status: "Sold", availableUnits: 3 })).toBe(0);
+    expect(totalAvailableUnits([{ status: "Published", availableUnits: 3 }, { status: "Published" }, { status: "Reserved", availableUnits: 2 }])).toBe(4);
+  });
+});

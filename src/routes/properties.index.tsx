@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PropertyCard } from "@/components/site/PropertyCard";
-import { useDbAll } from "@/lib/store";
-import { CATEGORIES, type DB } from "@/lib/types";
+import { totalAvailableUnits, useDbAll } from "@/lib/store";
+import { CATEGORIES, conditionLabel, type DB } from "@/lib/types";
 import { PLOT_SQFT, SQFT_PER_SQM } from "@/lib/company";
 
 const searchSchema = z.object({
@@ -17,6 +17,8 @@ const searchSchema = z.object({
   category: z.string().optional(),
   zone: z.string().optional(),
   sub: z.string().optional(),
+  avail: z.string().optional(),
+  cond: z.string().optional(),
   min: z.number().optional(),
   max: z.number().optional(),
   size: z.number().optional(),
@@ -47,6 +49,8 @@ export function filterProperties(db: DB, s: S) {
     (!s.category || p.category === s.category) &&
     (!s.zone || p.zoneId === s.zone) &&
     (!s.sub || p.subZoneId === s.sub) &&
+    (!s.avail || p.status === s.avail) &&
+    (!s.cond || (p.category === "House/Villa" && (p.condition ?? "Completed") === s.cond)) &&
     (s.min == null || p.price >= s.min) &&
     (s.max == null || p.price <= s.max) &&
     (s.size == null || p.plots >= toPlots(s.size, s.unit)),
@@ -64,10 +68,16 @@ function Filters({ s, set }: { s: S; set: (p: Partial<S>) => void }) {
           <button key={l} onClick={() => set({ tx: v as S["tx"] })} className={`rounded-md py-1.5 text-sm ${s.tx === v ? "bg-card font-semibold shadow-sm" : ""}`}>{l}</button>
         ))}
       </div>
-      <div><Label>Category</Label>
-        <Select value={s.category ?? "any"} onValueChange={(v) => set({ category: v === "any" ? undefined : v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All categories</SelectItem>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+      <div><Label>Property type</Label>
+        <Select value={s.category ?? "any"} onValueChange={(v) => set({ category: v === "any" ? undefined : v, cond: undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All property types</SelectItem>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
       </div>
-      <div><Label>Zone</Label>
+      {s.category === "House/Villa" && <div><Label>House condition</Label>
+        <Select value={s.cond ?? "any"} onValueChange={(v) => set({ cond: v === "any" ? undefined : v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">Any condition</SelectItem>{(s.tx === "rent" ? ["Completed", "Semi-completed"] : ["Completed", "Semi-completed", "Incomplete"]).map((c) => <SelectItem key={c} value={c}>{conditionLabel(c as never)}</SelectItem>)}</SelectContent></Select>
+      </div>}
+      <div><Label>Availability</Label>
+        <Select value={s.avail ?? "any"} onValueChange={(v) => set({ avail: v === "any" ? undefined : v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All</SelectItem><SelectItem value="Published">Available</SelectItem><SelectItem value="Reserved">Reserved</SelectItem><SelectItem value="Sold">Sold / Let</SelectItem></SelectContent></Select>
+      </div>
+      <div><Label>Zone number</Label>
         <Select value={s.zone ?? "any"} onValueChange={(v) => set({ zone: v === "any" ? undefined : v, sub: undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All zones</SelectItem>{db.zones.map((z, i) => <SelectItem key={z.id} value={z.id}>Z{i + 1} · {z.name}</SelectItem>)}</SelectContent></Select>
       </div>
       <div><Label>Sub-zone</Label>
@@ -119,10 +129,10 @@ function Catalogue() {
                 if (!txList.length) return null;
                 return (
                   <section key={tx}>
-                    <h2 className="mb-1 font-display text-2xl font-bold">{tx === "sale" ? "For Sale" : "For Rent"} <span className="text-base font-normal text-muted-foreground">({txList.length})</span></h2>
+                    <h2 className="mb-1 font-display text-2xl font-bold">{tx === "sale" ? "For Sale" : "For Rent"} <span className="text-base font-normal text-muted-foreground">({txList.length} listings · {totalAvailableUnits(txList)} units available)</span></h2>
                     <div className="mb-5 flex flex-wrap gap-2">
                       {db.zones.filter((z) => txList.some((p) => p.zoneId === z.id)).map((z) => (
-                        <a key={z.id} href={`#${tx}-${z.id}`} className="rounded-full border bg-card px-3 py-1 text-xs font-medium hover:border-primary">Z{db.zones.indexOf(z) + 1} {z.name} · {txList.filter((p) => p.zoneId === z.id).length}</a>
+                        <a key={z.id} href={`#${tx}-${z.id}`} className="rounded-full border bg-card px-3 py-1 text-xs font-medium hover:border-primary">Z{db.zones.indexOf(z) + 1} {z.name} · {txList.filter((p) => p.zoneId === z.id).length} · {totalAvailableUnits(txList.filter((p) => p.zoneId === z.id))} avail.</a>
                       ))}
                     </div>
                     <div className="space-y-8">
@@ -131,7 +141,7 @@ function Catalogue() {
                         if (!zl.length) return null;
                         return (
                           <div key={z.id} id={`${tx}-${z.id}`} className="scroll-mt-24">
-                            <h3 className="mb-3 flex items-center gap-2 border-l-4 border-accent pl-3 font-display text-lg font-semibold"><span className="rounded bg-primary px-2 py-0.5 text-xs text-primary-foreground">Z{db.zones.indexOf(z) + 1}</span>{z.name}<span className="text-sm font-normal text-muted-foreground">{zl.length} listing{zl.length === 1 ? "" : "s"}</span></h3>
+                            <h3 className="mb-3 flex items-center gap-2 border-l-4 border-accent pl-3 font-display text-lg font-semibold"><span className="rounded bg-primary px-2 py-0.5 text-xs text-primary-foreground">Z{db.zones.indexOf(z) + 1}</span>{z.name}<span className="text-sm font-normal text-muted-foreground">{zl.length} listing{zl.length === 1 ? "" : "s"} · {totalAvailableUnits(zl)} unit{totalAvailableUnits(zl) === 1 ? "" : "s"} available</span></h3>
                             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{zl.map((p) => <PropertyCard key={p.id} p={p} />)}</div>
                           </div>
                         );
