@@ -52,10 +52,17 @@ export function useDbAll(): DB {
 }
 
 // helpers
+/** Zone indicator Z1, Z2… from the zone's position in the zone list. */
+export function zoneTag(d: DB, zoneId: string) {
+  const i = d.zones.findIndex((x) => x.id === zoneId);
+  return i < 0 ? "" : `Z${i + 1}`;
+}
+
 export function zoneLabel(d: DB, zoneId: string, subZoneId?: string) {
   const z = d.zones.find((x) => x.id === zoneId);
   const s = z?.subZones.find((x) => x.id === subZoneId);
-  return [s?.name, z?.name].filter(Boolean).join(", ");
+  const tag = zoneTag(d, zoneId);
+  return [tag, [s?.name, z?.name].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
 }
 
 /** Type code: S/R (sale/rent) + L, CL, F, SH, or HFC/HSM/HUN (house: completed / semi-completed / uncompleted). Mirrors the database rule. */
