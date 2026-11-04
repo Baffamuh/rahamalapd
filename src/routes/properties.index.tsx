@@ -68,7 +68,7 @@ function Filters({ s, set }: { s: S; set: (p: Partial<S>) => void }) {
         <Select value={s.category ?? "any"} onValueChange={(v) => set({ category: v === "any" ? undefined : v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All categories</SelectItem>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
       </div>
       <div><Label>Zone</Label>
-        <Select value={s.zone ?? "any"} onValueChange={(v) => set({ zone: v === "any" ? undefined : v, sub: undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All zones</SelectItem>{db.zones.map((z) => <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>)}</SelectContent></Select>
+        <Select value={s.zone ?? "any"} onValueChange={(v) => set({ zone: v === "any" ? undefined : v, sub: undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All zones</SelectItem>{db.zones.map((z, i) => <SelectItem key={z.id} value={z.id}>Z{i + 1} · {z.name}</SelectItem>)}</SelectContent></Select>
       </div>
       <div><Label>Sub-zone</Label>
         <Select disabled={!zone} value={s.sub ?? "any"} onValueChange={(v) => set({ sub: v === "any" ? undefined : v })}><SelectTrigger><SelectValue placeholder="Select a zone first" /></SelectTrigger><SelectContent><SelectItem value="any">All sub-zones</SelectItem>{zone?.subZones.map((z) => <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>)}</SelectContent></Select>

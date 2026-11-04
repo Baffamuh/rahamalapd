@@ -62,7 +62,7 @@ function HomePage() {
             }}
           >
             <Select value={cat} onValueChange={setCat}><SelectTrigger><SelectValue placeholder="Property type" /></SelectTrigger><SelectContent><SelectItem value="any">All property types</SelectItem>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
-            <Select value={zone} onValueChange={setZone}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All zones</SelectItem>{db.zones.map((z) => <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>)}</SelectContent></Select>
+            <Select value={zone} onValueChange={setZone}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All zones</SelectItem>{db.zones.map((z, i) => <SelectItem key={z.id} value={z.id}>Z{i + 1} · {z.name}</SelectItem>)}</SelectContent></Select>
             <Select value={budget} onValueChange={setBudget}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{BUDGETS.map((b) => <SelectItem key={b.v} value={b.v}>{b.l}</SelectItem>)}</SelectContent></Select>
             <Button type="submit"><Search className="mr-1 h-4 w-4" /> Search</Button>
           </form>
