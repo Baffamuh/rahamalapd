@@ -68,7 +68,7 @@ function Filters({ s, set }: { s: S; set: (p: Partial<S>) => void }) {
         <Select value={s.category ?? "any"} onValueChange={(v) => set({ category: v === "any" ? undefined : v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All categories</SelectItem>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
       </div>
       <div><Label>Zone</Label>
-        <Select value={s.zone ?? "any"} onValueChange={(v) => set({ zone: v === "any" ? undefined : v, sub: undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All zones</SelectItem>{db.zones.map((z) => <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>)}</SelectContent></Select>
+        <Select value={s.zone ?? "any"} onValueChange={(v) => set({ zone: v === "any" ? undefined : v, sub: undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="any">All zones</SelectItem>{db.zones.map((z, i) => <SelectItem key={z.id} value={z.id}>Z{i + 1} · {z.name}</SelectItem>)}</SelectContent></Select>
       </div>
       <div><Label>Sub-zone</Label>
         <Select disabled={!zone} value={s.sub ?? "any"} onValueChange={(v) => set({ sub: v === "any" ? undefined : v })}><SelectTrigger><SelectValue placeholder="Select a zone first" /></SelectTrigger><SelectContent><SelectItem value="any">All sub-zones</SelectItem>{zone?.subZones.map((z) => <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>)}</SelectContent></Select>
@@ -122,7 +122,7 @@ function Catalogue() {
                     <h2 className="mb-1 font-display text-2xl font-bold">{tx === "sale" ? "For Sale" : "For Rent"} <span className="text-base font-normal text-muted-foreground">({txList.length})</span></h2>
                     <div className="mb-5 flex flex-wrap gap-2">
                       {db.zones.filter((z) => txList.some((p) => p.zoneId === z.id)).map((z) => (
-                        <a key={z.id} href={`#${tx}-${z.id}`} className="rounded-full border bg-card px-3 py-1 text-xs font-medium hover:border-primary">{z.name} · {txList.filter((p) => p.zoneId === z.id).length}</a>
+                        <a key={z.id} href={`#${tx}-${z.id}`} className="rounded-full border bg-card px-3 py-1 text-xs font-medium hover:border-primary">Z{db.zones.indexOf(z) + 1} {z.name} · {txList.filter((p) => p.zoneId === z.id).length}</a>
                       ))}
                     </div>
                     <div className="space-y-8">
@@ -131,7 +131,7 @@ function Catalogue() {
                         if (!zl.length) return null;
                         return (
                           <div key={z.id} id={`${tx}-${z.id}`} className="scroll-mt-24">
-                            <h3 className="mb-3 flex items-center gap-2 border-l-4 border-accent pl-3 font-display text-lg font-semibold">{z.name}<span className="text-sm font-normal text-muted-foreground">{zl.length} listing{zl.length === 1 ? "" : "s"}</span></h3>
+                            <h3 className="mb-3 flex items-center gap-2 border-l-4 border-accent pl-3 font-display text-lg font-semibold"><span className="rounded bg-primary px-2 py-0.5 text-xs text-primary-foreground">Z{db.zones.indexOf(z) + 1}</span>{z.name}<span className="text-sm font-normal text-muted-foreground">{zl.length} listing{zl.length === 1 ? "" : "s"}</span></h3>
                             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{zl.map((p) => <PropertyCard key={p.id} p={p} />)}</div>
                           </div>
                         );
