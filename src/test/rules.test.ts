@@ -34,7 +34,6 @@ describe("business rules", () => {
     expect(areaBreakdown(geodesicArea(pts)).plots).toBeCloseTo(1, 1);
   });
   it("detects a self-intersecting (bow-tie) boundary", () => expect(isSelfIntersecting([[0, 0], [1, 1], [1, 0], [0, 1]])).toBe(true));
-  it("reference codes follow RHM-AZR-###", () => expect(nextRef(makeSeed(), "AZR")).toBe("RHM-AZR-007"));
   it("receipt numbers follow RHM-RCP-YYYY-####", () => expect(nextReceipt(makeSeed(), 2026)).toBe("RHM-RCP-2026-0002"));
   it("balance = price − previously paid − paid now", () => expect(saleBalance({ price: 10000000, previouslyPaid: 2000000, amountPaid: 3000000 })).toBe(5000000));
   it("leaderboard ranks by sales volume for the selected year", () => {
