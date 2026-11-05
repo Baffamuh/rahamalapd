@@ -73,7 +73,7 @@ function AdminProperties() {
               <img src={p.images[0]} alt="" className="h-20 w-24 shrink-0 rounded-lg object-cover" />
               <div className="min-w-0 flex-1">
                 <div className="line-clamp-2 font-medium leading-snug">{p.title}</div>
-                <div className="truncate text-xs text-muted-foreground">{p.ref} · {zoneLabel(db, p.zoneId, p.subZoneId)}</div>
+                <div className="truncate text-xs text-muted-foreground">{p.ref} <button type="button" className="text-primary underline" onClick={(e) => { e.stopPropagation(); navigator.clipboard?.writeText(`${window.location.origin}/p/${p.ref.replace(/^RHM-/i, "")}`); toast.success("Short link copied"); }}>Copy link</button> · {zoneLabel(db, p.zoneId, p.subZoneId)}</div>
                 <div className="mt-1 font-display font-bold text-primary">{formatNaira(p.price)}</div>
               </div>
             </div>
@@ -98,7 +98,7 @@ function AdminProperties() {
           <tbody>
             {list.map((p) => (
               <tr key={p.id} className="border-t transition hover:bg-muted/40">
-                <td className="p-3"><div className="flex items-center gap-3"><img src={p.images[0]} alt="" className="h-11 w-16 rounded-md object-cover" /><div className="min-w-0"><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">{p.ref} · {p.category}</div></div></div></td>
+                <td className="p-3"><div className="flex items-center gap-3"><img src={p.images[0]} alt="" className="h-11 w-16 rounded-md object-cover" /><div className="min-w-0"><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">{p.ref} <button type="button" className="text-primary underline" onClick={(e) => { e.stopPropagation(); navigator.clipboard?.writeText(`${window.location.origin}/p/${p.ref.replace(/^RHM-/i, "")}`); toast.success("Short link copied"); }}>Copy link</button> · {p.category}</div></div></div></td>
                 <td className="p-3 text-muted-foreground">{zoneLabel(db, p.zoneId, p.subZoneId)}</td>
                 <td className="p-3 font-medium">{formatNaira(p.price)}</td>
                 <td className="p-3">{statusSel(p)}</td>

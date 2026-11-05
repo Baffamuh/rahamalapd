@@ -1,5 +1,12 @@
 import "./lib/error-capture";
 
+// Vercel only gets VITE_* values at build time; give server sign-in checks the same backend address.
+{
+  const env = process.env as Record<string, string | undefined>;
+  env["SUPABASE_URL"] ||= import.meta.env["VITE_SUPABASE_URL"] || "https://c--b79d9f5a-c357-4fef-8641-06fba0048bce-prod.lovable.cloud";
+  env["SUPABASE_PUBLISHABLE_KEY"] ||= import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "sb_publishable_ab4jSfw9z8QW4pjGPW2tWQ_sGIayObW";
+}
+
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
