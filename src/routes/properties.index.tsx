@@ -30,9 +30,9 @@ export const Route = createFileRoute("/properties/")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Properties for Sale & Rent in Azare and Bauchi | Rahama Property" },
-      { name: "description", content: "Browse verified residential land, commercial plots, houses, farms and shops across Azare and Bauchi State." },
-      { property: "og:title", content: "Properties in Azare & Bauchi | Rahama Property" },
+      { title: "Properties for Sale & Rent in Azare | Rahama Property" },
+      { name: "description", content: "Browse verified residential land, commercial plots, houses, farms and shops across Azare." },
+      { property: "og:title", content: "Properties in Azare | Rahama Property" },
       { property: "og:description", content: "Filter verified plots, homes and shops by zone, budget and size." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

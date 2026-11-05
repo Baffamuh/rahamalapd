@@ -26,7 +26,7 @@ export const Route = createFileRoute("/properties/$slug")({
   },
   head: ({ loaderData }) => {
     const t = loaderData?.title ? `${loaderData.title} (${loaderData.ref}) | Rahama Property` : "Property details | Rahama Property";
-    const d = loaderData?.title ? `${loaderData.title} — ${formatNaira(loaderData.price ?? 0)}. ${loaderData.description ?? ""}`.slice(0, 160) : "Verified property listing in Azare and Bauchi.";
+    const d = loaderData?.title ? `${loaderData.title} — ${formatNaira(loaderData.price ?? 0)}. ${loaderData.description ?? ""}`.slice(0, 160) : "Verified property listing in Azare.";
     const img = loaderData?.image;
     return {
       meta: [

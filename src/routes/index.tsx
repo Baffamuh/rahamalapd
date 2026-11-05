@@ -14,9 +14,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Rahama Property Hub — Verified Land & Homes in Azare, Bauchi" },
-      { name: "description", content: "Buy verified plots, houses, farms and shops in Azare and Bauchi with C-of-O documentation, site inspections and installment plans." },
+      { name: "description", content: "Buy verified plots, houses, farms and shops in Azare with C-of-O documentation, site inspections and installment plans." },
       { property: "og:title", content: "Rahama Property Hub — Verified Land & Homes in Azare" },
-      { property: "og:description", content: "Verified plots, houses and commercial property across Azare and Bauchi State." },
+      { property: "og:description", content: "Verified plots, houses and commercial property across Azare." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -51,7 +51,7 @@ function HomePage() {
         <img src={hero} alt="Surveyed residential plots in Azare" className="absolute inset-0 h-full w-full object-cover opacity-30" />
         <div className="relative mx-auto max-w-7xl px-4 py-20 md:py-28">
           <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground"><BadgeCheck className="h-3.5 w-3.5" /> CAC Registered · {COMPANY.rc}</span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">Own verified land in Azare & Bauchi — with papers you can trust.</h1>
+          <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">Own verified land in Azare — with papers you can trust.</h1>
           <p className="mt-4 max-w-xl text-lg opacity-90">Surveyed plots, family homes and commercial frontage, sold with genuine title documents and flexible installment plans.</p>
           <form
             className="mt-8 grid gap-2 rounded-xl bg-card p-3 text-card-foreground shadow-xl md:grid-cols-[1fr_1fr_1fr_auto]"
