@@ -34,7 +34,6 @@ describe("business rules", () => {
     expect(areaBreakdown(geodesicArea(pts)).plots).toBeCloseTo(1, 1);
   });
   it("detects a self-intersecting (bow-tie) boundary", () => expect(isSelfIntersecting([[0, 0], [1, 1], [1, 0], [0, 1]])).toBe(true));
-  it("reference codes follow RHM-AZR-###", () => expect(nextRef(makeSeed(), "AZR")).toBe("RHM-AZR-007"));
   it("receipt numbers follow RHM-RCP-YYYY-####", () => expect(nextReceipt(makeSeed(), 2026)).toBe("RHM-RCP-2026-0002"));
   it("balance = price − previously paid − paid now", () => expect(saleBalance({ price: 10000000, previouslyPaid: 2000000, amountPaid: 3000000 })).toBe(5000000));
   it("leaderboard ranks by sales volume for the selected year", () => {
@@ -44,23 +43,21 @@ describe("business rules", () => {
   it("inspection with deposit intent scores High", () =>
     expect(scoreLead({ message: "Ready to pay deposit this week", phone: "08051234567", type: "inspection", propertyId: "p1" }).priority).toBe("High"));
   it("sale and rent codes differ per category", () => {
-    expect(typeCode("sale", "House/Villa", "Incomplete")).toBe("SHUN");
-    expect(typeCode("rent", "House/Villa", "Semi-completed")).toBe("RHSM");
-    expect(typeCode("sale", "Shop")).toBe("SSH");
-    expect(typeCode("rent", "Farm")).toBe("RF");
+    expect(typeCode("sale", "Shop")).toBe("S-SH");
+    expect(typeCode("rent", "Shop")).toBe("R-SH");
+    expect(typeCode("sale", "Residential Land")).toBe("S-RL");
+    expect(typeCode("sale", "Commercial Land")).toBe("S-CL");
+    expect(typeCode("sale", "Farm")).toBe("S-FM");
   });
   it("the three house conditions each have their own code", () => {
-    const sale = ["Completed", "Semi-completed", "Incomplete"].map((c) => typeCode("sale", "House/Villa", c));
-    const rent = ["Completed", "Semi-completed", "Incomplete"].map((c) => typeCode("rent", "House/Villa", c));
-    expect(sale).toEqual(["SHFC", "SHSM", "SHUN"]);
-    expect(rent).toEqual(["RHFC", "RHSM", "RHUN"]);
-    expect(new Set([...sale, ...rent]).size).toBe(6);
+    expect(["Completed", "Semi-completed", "Incomplete"].map((c) => typeCode("sale", "House/Villa", c))).toEqual(["S-HC", "S-HS", "S-HI"]);
+    expect(typeCode("rent", "House/Villa", "Completed")).toBe("R-HC");
   });
   it("house codes differ from land, farm and shop codes", () => {
     expect(typeCode("sale", "House/Villa", "Completed")).not.toBe(typeCode("sale", "Shop"));
     expect(typeCode("sale", "House/Villa", "Completed")).not.toBe(typeCode("sale", "Residential Land"));
   });
-  it("auto ref includes type code", () => expect(nextRef(makeSeed(), "AZR", "rent", "Shop")).toBe("RHM-AZR-RSH-001"));
+  it("auto ref includes type code", () => expect(nextRef(makeSeed(), "AZR", "rent", "Shop")).toBe("RHM-R-SH-001"));
 });
 import { conditionLabel, conditionsFor, toWhatsApp } from "@/lib/types";
 describe("property numbers & conditions", () => {

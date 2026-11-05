@@ -65,15 +65,16 @@ export function zoneLabel(d: DB, zoneId: string, subZoneId?: string) {
   return [tag, [s?.name, z?.name].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
 }
 
-/** Type code: S/R (sale/rent) + L, CL, F, SH, or HFC/HSM/HUN (house: completed / semi-completed / uncompleted). Mirrors the database rule. */
+/** Type code: S/R (sale/rent) + RL, CL, FM, SH, or HC/HS/HI (house: completed / semi-completed / incomplete). Mirrors the database rule. */
 export function typeCode(tx: "sale" | "rent", category: string, condition?: string) {
-  const house = condition === "Semi-completed" ? "HSM" : condition === "Incomplete" ? "HUN" : "HFC";
-  const c = category === "Residential Land" ? "L" : category === "Commercial Land" ? "CL" : category === "Farm" ? "F" : category === "Shop" ? "SH" : category === "House/Villa" ? house : "X";
-  return (tx === "rent" ? "R" : "S") + c;
+  const house = condition === "Semi-completed" ? "HS" : condition === "Incomplete" ? "HI" : "HC";
+  const c = category === "Residential Land" ? "RL" : category === "Commercial Land" ? "CL" : category === "Farm" ? "FM" : category === "Shop" ? "SH" : category === "House/Villa" ? house : "X";
+  return `${tx === "rent" ? "R" : "S"}-${c}`;
 }
-export function nextRef(d: DB, code: "AZR" | "BAU", tx?: "sale" | "rent", category?: string, condition?: string) {
-  const pfx = tx && category ? `RHM-${code}-${typeCode(tx, category, condition)}-` : `RHM-${code}-`;
-  const nums = d.properties.filter((p) => p.ref.startsWith(pfx)).map((p) => parseInt(p.ref.slice(-3)) || 0);
+/** Next code like RHM-S-HC-001; each category/condition counts on its own. Zone is kept for call compatibility but no longer part of the code. */
+export function nextRef(d: DB, _code: "AZR" | "BAU", tx?: "sale" | "rent", category?: string, condition?: string) {
+  const pfx = `RHM-${typeCode(tx ?? "sale", category ?? "Residential Land", condition)}-`;
+  const nums = d.properties.filter((p) => p.ref.startsWith(pfx)).map((p) => parseInt(p.ref.slice(pfx.length)) || 0);
   return `${pfx}${String(Math.max(0, ...nums) + 1).padStart(3, "0")}`;
 }
 
