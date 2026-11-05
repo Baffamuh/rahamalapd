@@ -71,7 +71,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2"><Emblem /><span className="font-display font-bold">{COMPANY.name}</span></div>
-            <p className="mt-3 max-w-md text-sm opacity-80">Verified land, homes and commercial property across Azare and Bauchi. Registered with the CAC — {COMPANY.rc}.</p>
+            <p className="mt-3 max-w-md text-sm opacity-80">Verified land, homes and commercial property across Azare. Registered with the CAC — {COMPANY.rc}.</p>
           </div>
           <div className="space-y-2 text-sm opacity-90">
             <p className="flex gap-2"><MapPin className="h-4 w-4 shrink-0" />{COMPANY.address}</p>

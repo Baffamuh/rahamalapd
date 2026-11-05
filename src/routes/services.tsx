@@ -7,7 +7,7 @@ export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
       { title: "Services — Land Sales, Development & Title Documents | Rahama Property" },
-      { name: "description", content: "Land sales, property development, title documentation and site inspections in Azare and Bauchi." },
+      { name: "description", content: "Land sales, property development, title documentation and site inspections in Azare." },
       { property: "og:title", content: "Our Services | Rahama Property" },
       { property: "og:description", content: "Land sales, building, C-of-O processing and guided site inspections." },
       { property: "og:type", content: "website" },
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/services")({
           [MapPinned, "Land Sales", "Residential, commercial and farmland plots in planned layouts across six zones, each with beacons and survey plans. Standard plots are 50ft × 100ft."],
           [Home, "Property Development", "From design to keys: bungalows, duplexes, hostels and shops built with quality materials and transparent costing."],
           [FileCheck2, "Title Documentation", "We process and verify Certificates of Occupancy, Right of Occupancy, survey plans and deeds of assignment with the Bauchi State Ministry of Lands."],
-          [Search, "Site Inspections", "Free guided inspections in Azare and Bauchi, plus live video walk-throughs for buyers outside Nigeria."],
+          [Search, "Site Inspections", "Free guided inspections in Azare, plus live video walk-throughs for buyers outside Nigeria."],
         ].map(([Icon, t, d]) => {
           const I = Icon as typeof Home;
           return <div key={t as string} className="rounded-xl border p-6"><I className="h-8 w-8 text-primary" /><h2 className="mt-3 text-xl font-semibold">{t as string}</h2><p className="mt-2 text-muted-foreground">{d as string}</p></div>;
