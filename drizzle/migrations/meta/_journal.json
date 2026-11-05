@@ -36,6 +36,13 @@
       "when": 1793695176100,
       "tag": "0004_house_condition_type_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793892583397,
+      "tag": "0005_simple_property_codes",
+      "breakpoints": true
     }
   ]
 }
