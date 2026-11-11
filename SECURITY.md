@@ -3,7 +3,7 @@
 ## Architecture
 - Public site and admin portal (TanStack Start). Data in Lovable Cloud (Postgres) with Row-Level Security on every table.
 - Auth: Lovable Cloud Auth (bcrypt hashing, JWT sessions with expiry/refresh, leaked-password (HIBP) check on). Google sign-in via the managed broker.
-- Roles live in `user_roles` (never on profiles); `has_role()` is SECURITY DEFINER with fixed search_path. Admin role is auto-granted only to the two company emails by trigger.
+- Roles live in `user_roles` (never on profiles); `has_role()` is SECURITY DEFINER with fixed search_path. Admin roles are never granted from a claimed email; existing admins were assigned directly and new admins must be added explicitly.
 
 ## Authorization
 - Admin server functions (`getAdminDb`, `saveChanges`) require a valid bearer token (`requireSupabaseAuth`) and re-check the admin role server-side; RLS enforces it again in the database.

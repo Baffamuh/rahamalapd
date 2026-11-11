@@ -43,6 +43,13 @@
       "when": 1793892583397,
       "tag": "0005_simple_property_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794380058236,
+      "tag": "0006_remove_email_admin_autogrant",
+      "breakpoints": true
     }
   ]
 }
