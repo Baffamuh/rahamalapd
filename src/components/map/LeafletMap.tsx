@@ -28,12 +28,19 @@ export default function LeafletMap({ points, onAddPoint, onMovePoint, showEdges,
   useEffect(() => {
     if (!el.current || map.current) return;
     const start = center ?? (points[0] as LatLng | undefined) ?? COMPANY.center;
-    const m = L.map(el.current, { maxZoom: 21 }).setView(start, zoom);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 21,
-      maxNativeZoom: 19,
-      attribution: "© OpenStreetMap contributors",
-    }).addTo(m);
+    // No accidental zooming: scroll, double-tap and box zoom are off; use the + / − buttons or pinch.
+    const m = L.map(el.current, { maxZoom: 21, scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, zoomSnap: 0.5 }).setView(start, zoom);
+    // Free high-resolution layers (no key): sharp satellite photos by default, street map as an option.
+    const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 21, maxNativeZoom: 17, attribution: "Imagery © Esri, Maxar, Earthstar Geographics",
+    });
+    const labels = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", { maxZoom: 21, maxNativeZoom: 17 });
+    const streets = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 21, maxNativeZoom: 19, detectRetina: true, attribution: "© OpenStreetMap contributors",
+    });
+    const sat = L.layerGroup([satellite, labels]).addTo(m);
+    L.control.layers({ Satellite: sat, "Street map": streets }, undefined, { position: "topright" }).addTo(m);
+    L.control.scale({ imperial: true, metric: true, position: "bottomleft" }).addTo(m);
     m.on("click", (e: L.LeafletMouseEvent) => clickRef.current?.([e.latlng.lat, e.latlng.lng]));
     layer.current = L.layerGroup().addTo(m);
     map.current = m;
@@ -64,7 +71,7 @@ export default function LeafletMap({ points, onAddPoint, onMovePoint, showEdges,
         const mid: LatLng = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
         L.marker(mid, {
           interactive: false,
-          icon: L.divIcon({ className: "edge-label", html: `<span>${(len * M_TO_FT).toFixed(1)} ft</span>`, iconSize: [0, 0] }),
+          icon: L.divIcon({ className: "edge-label", html: `<span>${(len * M_TO_FT).toFixed(1)} ft · ${len.toFixed(2)} m</span>`, iconSize: [0, 0] }),
         }).addTo(g);
       });
     }
