@@ -51,12 +51,29 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+// Security headers for every response. CSP limits plugins, base URL, form targets and who may frame the site.
+export const SECURITY_HEADERS: Record<string, string> = {
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), payment=(), geolocation=(self)",
+  "Content-Security-Policy": "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev",
+};
+function withSecurityHeaders(response: Response): Response {
+  try {
+    const out = new Response(response.body, response);
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) if (!out.headers.has(k)) out.headers.set(k, v);
+    if (out.headers.get("content-type")?.includes("application/json") && !out.headers.has("cache-control")) out.headers.set("Cache-Control", "no-store");
+    return out;
+  } catch { return response; }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return withSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

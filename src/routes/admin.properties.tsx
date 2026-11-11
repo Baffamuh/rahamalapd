@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BoundaryDrawer } from "@/components/map/BoundaryDrawer";
 import { formatNaira } from "@/lib/company";
-import { watermarkPhoto } from "@/lib/watermark";
+import { watermarkPhoto, isSafeImageUrl } from "@/lib/watermark";
 import { nextRef, totalAvailableUnits, typeCode, uid, updateDb, useDbAll, zoneLabel } from "@/lib/store";
 import { CATEGORIES, STATUSES, TITLE_DOCS, conditionLabel, conditionsFor, type HouseCondition, type Property, type PropertyStatus } from "@/lib/types";
 
@@ -154,7 +154,7 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
   const onFile = async (files: FileList | null) => {
     setBusy(true);
     for (const file of Array.from(files ?? [])) {
-      try { const url = await watermarkPhoto(file); setF((p) => ({ ...p, images: [...p.images, url] })); } catch { toast.error(`Could not read ${file.name}`); }
+      try { const url = await watermarkPhoto(file); setF((p) => ({ ...p, images: [...p.images, url] })); } catch (err) { toast.error(`${file.name}: ${err instanceof Error ? err.message : "could not be read"}`); }
     }
     setBusy(false);
   };
@@ -192,8 +192,8 @@ function PropertyForm({ initial, onDone }: { initial: Property; onDone: () => vo
 
       <div className="space-y-2 rounded-xl border p-4"><h3 className="font-semibold">3. Photos</h3>
         <div className="flex flex-wrap gap-2">{f.images.map((src, i) => <div key={i} className="relative"><img src={src} alt="" className="h-16 w-24 rounded object-cover" /><button className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground" onClick={() => set("images", f.images.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button></div>)}</div>
-        <div className="flex gap-2"><Input placeholder="Paste image URL" value={imgUrl} onChange={(e) => setImgUrl(e.target.value)} /><Button type="button" variant="outline" onClick={() => { if (imgUrl.trim()) { set("images", [...f.images, imgUrl.trim()]); setImgUrl(""); } }}>Add</Button></div>
-        <Input type="file" accept="image/*" multiple disabled={busy} onChange={(e) => { onFile(e.target.files); e.target.value = ""; }} />
+        <div className="flex gap-2"><Input placeholder="Paste image URL" value={imgUrl} onChange={(e) => setImgUrl(e.target.value)} /><Button type="button" variant="outline" onClick={() => { if (imgUrl.trim() && !isSafeImageUrl(imgUrl.trim())) { toast.error("Use an https:// image link"); return; } if (imgUrl.trim()) { set("images", [...f.images, imgUrl.trim()]); setImgUrl(""); } }}>Add</Button></div>
+        <Input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={busy} onChange={(e) => { onFile(e.target.files); e.target.value = ""; }} />
         <p className="text-xs text-muted-foreground">{busy ? "Adding your logo to photos…" : "Your Rahama logo is added automatically to every uploaded photo."}</p>
       </div>
 
